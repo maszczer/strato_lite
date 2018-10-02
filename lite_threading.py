@@ -41,7 +41,7 @@ class userThread(threading.Thread):
             elif ((command.lower() == 's') | (command.lower() == "status")):
                 print("APRS key: " + c.aprsKey)
                 print("Output mode: " + c.mode)
-                print("Telescope coordinates : [" + c.refPos[0] + ", " + c.refPos[1] + ", " + c.refPos[2] + "]")
+                print("Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]")
                 print("TCP_IP: " + c.TCP_IP)
                 print("TCP_PORT: " + c.TCP_PORT)
 
@@ -66,7 +66,7 @@ class userThread(threading.Thread):
                     print("RANGE: " + str(c.log[val][7]) + " m")
                     print("   HA: " + str(c.log[val][8]) + " deg with offset = " + str(c.offsetHA))
                     print("  DEC: " + str(c.log[val][9]) + " deg with offset = " + str(c.offsetDEC))
-                    print("Last command sent: " + str(c.log[val][10]))
+                    print(">> " + str(c.log[val][10]))
                     #add more here
                     if (c.pause == 1):
                         print("Telescope movement is paused\n")

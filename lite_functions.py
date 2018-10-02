@@ -96,15 +96,12 @@ def repeat():
     predPos = predict.predict(balloonPos)
     source = "aprs"
 
-    n = len(c.log) - 1
-    c.predLog[n].append(c.log[n][0:2])
-    if (n > 0):
+    c.predLog.append(predPos)
+    if (len(c.log) - 1 > 0):
         if (checkUpdate() == 0):
-            balloonPos = [c.predLog[n][0], c.predLog[n][1], c.predLog[n][2]]
-            predPos = predict.predict(balloonPos)
-            c.predLog[n][0] = predPos[0]
-            c.predLog[n][1] = predPos[1]
-            c.predLog[n][2] = predPos[2]
+            balloonPos = [c.predLog[len(c.log) - 2][0], c.predLog[len(c.log) - 2][1], c.predLog[len(c.log) - 2][2]]
+            c.predLog[len(c.log) - 1] = predict.predict(balloonPos)
+
             c.noUpdate += 1
             source = "pred"
         else:
@@ -119,9 +116,8 @@ def repeat():
     predOut[0] += c.offsetHA
     predOut[1] += c.offsetDEC
 
-    print("   HA: " + str(predOut[0]) + "deg")
-    print("  DEC: " + str(predOut[1]) + "deg")
-    #add offset, time since last APRS update, strOut
+    print("   HA: " + str(predOut[0]) + " deg")
+    print("  DEC: " + str(predOut[1]) + " deg")
 
     extraData = [az, el, range]
     c.log[len(c.log) - 1].extend(extraData)
@@ -138,5 +134,5 @@ def repeat():
     if (c.mode == "actual"):
         c.sock.send(bytes(strOut, 'utf-8'))
 
-    c.log.append(source)
+    c.log[len(c.log) - 1].append(source)
     time.sleep(1)

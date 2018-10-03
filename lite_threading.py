@@ -12,7 +12,7 @@ class autoThread(threading.Thread):
         # output log to csv
         with open('tracking_TEST_data.csv', 'w') as myfile:
             writer = csv.writer(myfile, delimiter=',', lineterminator='\n', quoting=csv.QUOTE_ALL)
-            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "time", "timestamp", "az (deg)", "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)"])
+            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "time","timestamp", "az (deg)", "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)", "predLat (deg)", "predLng (deg)", "predAlt (m)", "source"])
 
             while (c.live == 1):
                 #print(str(n));
@@ -34,14 +34,15 @@ class userThread(threading.Thread):
             # Help
             # List commands
             if ((command.lower() == 'h') | (command.lower() == "help")):
-                print("'d' or 'data' display most recent data\n'p' or 'pause' pause telescope movement (toggles on/off)\n'o' or 'offset' change offset to HA, DEC\n")
-                print("'r' or 'reset' orient telescope to default position\n's' or 'status' display flight setup info\n'q' quit program\n")
+                print("'d' or 'data' display most recent data\n'p' or 'pause' pause telescope movement (toggles on/off)\n'o' or 'offset' change offset to HA, DEC")
+                print("'r' or 'reset' orient telescope to default position\n's' or 'status' display flight setup info\n'q' or 'quit' quit program\n")
 
             # Status
             # Print flight setup info
             elif ((command.lower() == 's') | (command.lower() == "status")):
                 print("APRS key: " + c.aprsKey)
                 print("Output mode: " + c.mode)
+                print("Update occurs every " + str(c.timer) + " sec")
                 print("Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]")
                 print("TCP_IP: " + c.TCP_IP)
                 print("TCP_PORT: " + c.TCP_PORT + "\n")
@@ -60,13 +61,17 @@ class userThread(threading.Thread):
                         print("Calls since last update: " + str(c.noUpdate))
                     print("  LAT: " + str(c.log[val][0]) + " deg")
                     print("  LNG: " + str(c.log[val][1]) + " deg")
-                    print("  ALT: " + str(c.log[val][2]) + " deg")
+                    print("  ALT: " + str(c.log[val][2]) + " m")
                     print(" TIME: " + str(c.log[val][3]))
                     print("   AZ: " + str(c.log[val][5]) + " deg")
                     print("   EL: " + str(c.log[val][6]) + " deg")
                     print("RANGE: " + str(c.log[val][7]) + " m")
                     print("   HA: " + str(c.log[val][8]) + " deg & offset " + str(c.offsetHA))
-                    print("  DEC: " + str(c.log[val][9]) + " deg & offset " + str(c.offsetDEC))
+                    print("  DEC: " + str(c.log[val][9]) + "  deg & offset " + str(c.offsetDEC) + "\n")
+                    print("Predicted")
+                    print("  LAT: " + str(c.log[val][11]) + " deg")
+                    print("  LNG: " + str(c.log[val][12]) + " deg")
+                    print("  ALT: " + str(c.log[val][13]) + " m\n")
                     print(">> " + str(c.log[val][10]))
                     print(str(c.log[val][4]))
                     if (c.pause == 1):

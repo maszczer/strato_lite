@@ -11,6 +11,7 @@ def main():
         # TEST
         if (strIn.lower() == "test"):
             selected = 1
+            print("Running TEST ....\n")
 
         # ACTUAL
         elif (strIn.lower() == "actual"):
@@ -43,9 +44,10 @@ def main():
                 print("Connection established ....\n")
                 c.mode = "actual"
                 selected = 1
+                print("Running ACTUAL ....\n")
 
             else:
-                print("Invalid command\n")
+                print("Not running ACTUAL ....\n")
 
         else:
             print("Invalid mode\n")
@@ -64,10 +66,10 @@ TODO
 [x] Implement offset 'o' to change offset to HA, DEC
 [x] set minimum elevation of 16 degrees instead of 18
 [x] Change default 'd' to reset 'r' 
-[ ] Update recurring print for time, aprs data, predicted HA, DEC, any offset, time since last APRS update, etc
-[ ] Implement data 'd' to print more detailed info for most recent data
+[x] Update recurring print for time, aprs data, predicted HA, DEC, any offset, time since last APRS update, etc
+[x] Implement data 'd' to print more detailed info for most recent data
  * Still needs offset for HA, DEC, time since last APRS update
-[ ] Add predLog[] to track predictions in the event of misreading from APRS 
+[ ] Print error from previous data
 
 NOTE
  * If GPS data is pulled instead of APRS.fi, make sure format is compatible

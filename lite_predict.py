@@ -1,4 +1,5 @@
 import lite_config as c
+import lite_functions as fcn
 
 # User instrucitons
 '''
@@ -30,6 +31,13 @@ where 'j' indicates the latitude, longitude, or altitude
 
 The balloon's starting coordinates (geodetic) can be referenced using
     pos[j]
+    
+Previous predicted values can also be referenced from log[]
+    latitude:  j = 11
+    longitude: j = 12
+    altitude:  j = 13
+NOTE: You can only access predicted values for previous values
+Attempting to access c.log[c.n][j] for j = 11, 12, or 13 will throw an error
 
 MOST RECENT DATA
 ----------------

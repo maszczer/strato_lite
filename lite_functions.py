@@ -93,18 +93,13 @@ def repeat():
     predPos = predict.predict(balloonPos)
     source = "aprs"
 
-    c.predLog.append(predPos)
     if (len(c.log) - 1 > 0):
         if (checkUpdate() == 0):
-            balloonPos = [c.predLog[len(c.log) - 2][0], c.predLog[len(c.log) - 2][1], c.predLog[len(c.log) - 2][2]]
-            c.predLog[len(c.log) - 1] = predict.predict(balloonPos)
             source = "pred"
             c.noUpdate += 1
         else:
             c.noUpdate = 0
 
-    # data is stored in in log as a list
-    # [lat, lng, alt, time, timestamp, az, el, range, ha, dec, strOut]
     az, el, range = pm.geodetic2aer(predPos[0], predPos[1], predPos[2], c.refPos[0], c.refPos[1], c.refPos[2])
     predOut = AZELtoHADEC([az, el, range])
 
@@ -130,5 +125,6 @@ def repeat():
     if (c.mode == "actual"):
         c.sock.send(bytes(strOut, 'utf-8'))
 
+    c.log[len(c.log) - 1].extend(predPos)
     c.log[len(c.log) - 1].append(source)
     time.sleep(1)

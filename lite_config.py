@@ -64,6 +64,6 @@ printed = 0
 # string output sent to telescope
 
 # socket for sending commands in tracking_ACTUAL
-TCP_IP = ""
-TCP_PORT = ""
+TCP_IP = "Not set"
+TCP_PORT = "Not set"
 sock = None

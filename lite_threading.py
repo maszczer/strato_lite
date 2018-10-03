@@ -30,11 +30,12 @@ class userThread(threading.Thread):
 
     def run(self):
         while (c.live == 1):
-            command = input("(Type 'h' or 'help' to list commands)\n")
+            command = input("(Type 'h' or 'help' to list commands)\n\n")
             # Help
             # List commands
             if ((command.lower() == 'h') | (command.lower() == "help")):
-                print("'d' display most recent data\n'p' pause telescope movement (toggles on/off)\n'o' change offset to HA, DEC\n'r' reset orientation to default position\n's' display flight setup info\n'q' quit program\n")
+                print("'d' or 'data' display most recent data\n'p' or 'pause' pause telescope movement (toggles on/off)\n'o' or 'offset' change offset to HA, DEC\n")
+                print("'r' or 'reset' orient telescope to default position\n's' or 'status' display flight setup info\n'q' quit program\n")
 
             # Status
             # Print flight setup info
@@ -43,7 +44,7 @@ class userThread(threading.Thread):
                 print("Output mode: " + c.mode)
                 print("Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]")
                 print("TCP_IP: " + c.TCP_IP)
-                print("TCP_PORT: " + c.TCP_PORT)
+                print("TCP_PORT: " + c.TCP_PORT + "\n")
 
             # Data
             # Print most recent data
@@ -64,10 +65,10 @@ class userThread(threading.Thread):
                     print("   AZ: " + str(c.log[val][5]) + " deg")
                     print("   EL: " + str(c.log[val][6]) + " deg")
                     print("RANGE: " + str(c.log[val][7]) + " m")
-                    print("   HA: " + str(c.log[val][8]) + " deg with offset = " + str(c.offsetHA))
-                    print("  DEC: " + str(c.log[val][9]) + " deg with offset = " + str(c.offsetDEC))
+                    print("   HA: " + str(c.log[val][8]) + " deg & offset " + str(c.offsetHA))
+                    print("  DEC: " + str(c.log[val][9]) + " deg & offset " + str(c.offsetDEC))
                     print(">> " + str(c.log[val][10]))
-                    #add more here
+                    print(str(c.log[val][4]))
                     if (c.pause == 1):
                         print("Telescope movement is paused\n")
                     else:
@@ -89,9 +90,9 @@ class userThread(threading.Thread):
                 if (val.lower() == "yes"):
                     c.offsetHA = newHA
                     c.offsetDEC = newDEC
-                    print("Offset changed to (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")")
+                    print("Offset changed to (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
                 else:
-                    print("Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")")
+                    print("Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
 
             # Pause
             # Pause/resume telescope movement, while maintaining tracking
@@ -114,7 +115,7 @@ class userThread(threading.Thread):
                         c.sock.close()
                     exit(0)
                 else :
-                    print("Resuming tracking ....")
+                    print("Resuming tracking ....\n")
 
             # Reset
             # Send telescope to HA 3.66 and DEC -6.8
@@ -126,11 +127,11 @@ class userThread(threading.Thread):
                     if (c.mode == "actual"):
                         c.sock.send(bytes(defOut, 'utf-8'))
                     defOut = ("#12;")
-                    print(">> " + defOut)
+                    print(">> " + defOut + "\n")
                     if (c.mode == "actual"):
                         c.sock.send(bytes(defOut, 'utf-8'))
                 else:
-                    print("Resuming tracking ....")
+                    print("Resuming tracking ....\n")
 
             # No other valid commands
             else:

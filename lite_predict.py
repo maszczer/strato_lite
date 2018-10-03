@@ -58,10 +58,10 @@ def predict(pos):
         ## MAKE ALL CHANGES BELOW ##
         ############################
 
-    else :
-        predLat = (c.log[c.n][0] - c.log[c.n - 1][0]) + c.log[c.n][0];
-        predLng = (c.log[c.n][1] - c.log[c.n - 1][1]) + c.log[c.n][1];
-        predAlt = (c.log[c.n][2] - c.log[c.n - 1][2]) + c.log[c.n][2];
+    else:
+        predLat = (c.log[c.n][0] - c.log[c.n - 1][0]) + c.log[c.n][0]
+        predLng = (c.log[c.n][1] - c.log[c.n - 1][1]) + c.log[c.n][1]
+        predAlt = (c.log[c.n][2] - c.log[c.n - 1][2]) + c.log[c.n][2]
 
         ############################
         ## MAKE ALL CHANGES ABOVE ##

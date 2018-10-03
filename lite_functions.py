@@ -77,13 +77,10 @@ def checkUpdate():
         if ((c.log[c.n][0] == c.log[c.n-1][0])
             & (c.log[c.n][1] == c.log[c.n-1][1])
             & (c.log[c.n][2] == c.log[c.n-1][2])):
-            c.noUpdate += 1
             return 0
         else:
-            c.noUpdate = 0
             return 1
     else:
-        c.noUpdate = 0
         return 1
 
 # Repeat these functions within loop
@@ -101,9 +98,8 @@ def repeat():
         if (checkUpdate() == 0):
             balloonPos = [c.predLog[len(c.log) - 2][0], c.predLog[len(c.log) - 2][1], c.predLog[len(c.log) - 2][2]]
             c.predLog[len(c.log) - 1] = predict.predict(balloonPos)
-
-            c.noUpdate += 1
             source = "pred"
+            c.noUpdate += 1
         else:
             c.noUpdate = 0
 
@@ -116,8 +112,8 @@ def repeat():
     predOut[0] += c.offsetHA
     predOut[1] += c.offsetDEC
 
-    print("   HA: " + str(predOut[0]) + " deg")
-    print("  DEC: " + str(predOut[1]) + " deg")
+    print("   HA: " + str(round(predOut[0], 4)) + " deg")
+    print("  DEC: " + str(round(predOut[1], 4)) + " deg")
 
     extraData = [az, el, range]
     c.log[len(c.log) - 1].extend(extraData)

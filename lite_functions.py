@@ -107,6 +107,7 @@ def repeat():
     predOut[0] += c.offsetHA
     predOut[1] += c.offsetDEC
 
+    print("--------------------------------------------")
     print("   HA: " + str(round(predOut[0], 4)) + " deg")
     print("  DEC: " + str(round(predOut[1], 4)) + " deg")
 
@@ -122,6 +123,10 @@ def repeat():
 
     c.log[len(c.log) - 1].append(strOut)
     print(">> " + strOut)
+    if (c.noUpdate == 0):
+        print("Data is up to date")
+    else:
+        print("Calls since last update: " + str(c.noUpdate))
     if (c.mode == "actual"):
         c.sock.send(bytes(strOut, 'utf-8'))
 

@@ -42,10 +42,11 @@ class userThread(threading.Thread):
             elif ((command.lower() == 's') | (command.lower() == "status")):
                 print("APRS key: " + c.aprsKey)
                 print("Output mode: " + c.mode)
-                print("Update occurs every " + str(c.timer) + " sec")
+                print("Update occurs every " + str(c.timer + 2) + " sec")
                 print("Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]")
                 print("TCP_IP: " + c.TCP_IP)
                 print("TCP_PORT: " + c.TCP_PORT + "\n")
+                print("Program has been running for " + str(c.n * (c.timer _ 2) / 60) + " min")
 
             # Data
             # Print most recent data
@@ -86,17 +87,21 @@ class userThread(threading.Thread):
             elif ((command.lower() == 'o') | (command.lower() == "offset")):
                 print(" HA offset = " + str(c.offsetHA))
                 print("DEC offset = " + str(c.offsetDEC))
-                val = input("> Enter new HA offset")
-                newHA = float(val)
-                val = input("> Enter new DEC offset")
-                newDEC = float(val)
-                print("New (HA, DEC) offset will be (" + str(newHA) + ", " + str(newDEC) + ")")
-                val = input("Are you sure you want to change HA, DEC offset?\nType 'yes' to change, anything else to cancel\n")
-                if (val.lower() == "yes"):
-                    c.offsetHA = newHA
-                    c.offsetDEC = newDEC
-                    print("Offset changed to (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
+                ha = input("> Enter new HA offset\n")
+                dec = input("> Enter new DEC offset\n")
+                if((c.checkNum(ha) == 1) & (c.checkNum(dec))):
+                    newHA = float(ha)
+                    newDEC = float(dec)
+                    print("New (HA, DEC) offset will be (" + ha + ", " + dec + ")")
+                    val = input("Are you sure you want to change HA, DEC offset?\nType 'yes' to change, anything else to cancel\n")
+                    if (val.lower() == "yes"):
+                        c.offsetHA = newHA
+                        c.offsetDEC = newDEC
+                        print("Offset changed to (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
+                    else:
+                        print("Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
                 else:
+                    print("HA & DEC must be numbers")
                     print("Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
 
             # Pause

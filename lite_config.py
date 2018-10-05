@@ -36,7 +36,7 @@ while (set == 0):
             refPos = [float(lat), float(lng), float(alt)]
             set = 1
     else:
-        print("Latitude, longitude, & altitude must be numbers")
+        print("Latitude, longitude, & altitude must be numbers\n")
 
 # Callsign to track
 callsign = ""; set = 0
@@ -53,13 +53,14 @@ timer = 0; set = 0
 while (set == 0):
     timer = input("> Enter time (sec) between each update (minimum time is 5 seconds)\n")
     if (checkNum(timer) == 1):
+        timer = float(timer)
         if (timer < 5):
             print("Interval is too short\n")
         else:
             timer -= 2
             set = 1
     else:
-        print("Input must be a number")
+        print("Input must be a number\n")
 
 # Data is stored in in log as a list [0:14]
 # [lat, lng, alt, time, timestamp, az, el, range, ha, dec, strOut, predLat, predLng, predAlt, source]

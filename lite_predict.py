@@ -66,9 +66,9 @@ def predict(pos):
         ## MAKE ALL CHANGES BELOW ##
         ############################
     elif (fcn.checkUpdate() == 0 & c.n > 2):
-        predLat = (c.log[c.n - 1][11] - c.log[c.n - 2][11]) + c.log[c.n - 1][11]
-        predLat = (c.log[c.n - 1][12] - c.log[c.n - 2][12]) + c.log[c.n - 1][12]
-        predLat = (c.log[c.n - 1][13] - c.log[c.n - 2][13]) + c.log[c.n - 1][13]
+        predLat = (c.log[c.n - 1][11] - c.log[c.n - 2][11]) * c.noUpdate + c.log[c.n - 1][11]
+        predLat = (c.log[c.n - 1][12] - c.log[c.n - 2][12]) * c.noUpdate + c.log[c.n - 1][12]
+        predLat = (c.log[c.n - 1][13] - c.log[c.n - 2][13]) * c.noUpdate + c.log[c.n - 1][13]
 
     else:
         predLat = (c.log[c.n][0] - c.log[c.n - 1][0]) + c.log[c.n][0]

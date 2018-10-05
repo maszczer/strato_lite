@@ -68,10 +68,9 @@ TODO
 [x] Change default 'd' to reset 'r' 
 [x] Update recurring print for time, aprs data, predicted HA, DEC, any offset, time since last APRS update, etc
 [x] Implement data 'd' to print more detailed info for most recent data
- * Still needs offset for HA, DEC, time since last APRS update
 [ ] Print error from previous data
 
 NOTE
  * If GPS data is pulled instead of APRS.fi, make sure format is compatible
- * data stored in log[lat, lng, alt, time, timestamp, az, el, range, ha, dec, strOut]
+ * Predicted location is only valid for 1st instance after losing APRS (currently)
 '''

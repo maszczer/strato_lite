@@ -30,7 +30,7 @@ class userThread(threading.Thread):
 
     def run(self):
         while (c.live == 1):
-            command = input("(Type 'h' or 'help' to list commands)\n\n")
+            command = input("(Type 'h' or 'help' to list commands)\n")
             # Help
             # List commands
             if ((command.lower() == 'h') | (command.lower() == "help")):
@@ -46,7 +46,7 @@ class userThread(threading.Thread):
                 print("Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]")
                 print("TCP_IP: " + c.TCP_IP)
                 print("TCP_PORT: " + c.TCP_PORT + "\n")
-                print("Program has been running for " + str(c.n * (c.timer _ 2) / 60) + " min")
+                print("Program has been running for " + str(c.n * (c.timer + 2) / 60) + " min")
 
             # Data
             # Print most recent data
@@ -56,10 +56,6 @@ class userThread(threading.Thread):
                     val = 0
                     if (c.n > 0):
                         val = c.n - 1
-                    if (c.noUpdate == 0):
-                        print("Data is up to date")
-                    else:
-                        print("Calls since last update: " + str(c.noUpdate))
                     print("  LAT: " + str(c.log[val][0]) + " deg")
                     print("  LNG: " + str(c.log[val][1]) + " deg")
                     print("  ALT: " + str(c.log[val][2]) + " m")
@@ -74,6 +70,10 @@ class userThread(threading.Thread):
                     print("  LNG: " + str(c.log[val][12]) + " deg")
                     print("  ALT: " + str(c.log[val][13]) + " m\n")
                     print(">> " + str(c.log[val][10]))
+                    if (c.noUpdate == 0):
+                        print("Data is up to date")
+                    else:
+                        print("Calls since last update: " + str(c.noUpdate))
                     print(str(c.log[val][4]))
                     if (c.pause == 1):
                         print("Telescope movement is paused\n")

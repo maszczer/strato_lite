@@ -1,4 +1,4 @@
-import csv
+import csv, datetime
 import lite_functions as fcn
 import threading, time
 import lite_config as c
@@ -10,9 +10,12 @@ class autoThread(threading.Thread):
 
     def run(self):
         # output log to csv
-        with open('tracking_TEST_data.csv', 'w') as myfile:
+        filename = 'tracking_' + c.mode + '_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
+        with open(filename, 'w') as myfile:
             writer = csv.writer(myfile, delimiter=',', lineterminator='\n', quoting=csv.QUOTE_ALL)
-            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "time","timestamp", "az (deg)", "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)", "predLat (deg)", "predLng (deg)", "predAlt (m)", "source"])
+            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "time","timestamp", "az (deg)",
+                             "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)",
+                             "predLat (deg)", "predLng (deg)", "predAlt (m)", "source"])
 
             while (c.live == 1):
                 #print(str(n));
@@ -34,19 +37,23 @@ class userThread(threading.Thread):
             # Help
             # List commands
             if ((command.lower() == 'h') | (command.lower() == "help")):
-                print("'d' or 'data' display most recent data\n'p' or 'pause' pause telescope movement (toggles on/off)\n'o' or 'offset' change offset to HA, DEC")
-                print("'r' or 'reset' orient telescope to default position\n's' or 'status' display flight setup info\n'q' or 'quit' quit program\n")
+                print("'d' or 'data' display most recent data\n"
+                      "'p' or 'pause' pause telescope movement (toggles on/off)\n"
+                      "'o' or 'offset' change offset to HA, DEC\n"
+                      "'r' or 'reset' orient telescope to default position\n"
+                      "'s' or 'status' display flight setup info\n"
+                      "'q' or 'quit' quit program\n")
 
             # Status
             # Print flight setup info
             elif ((command.lower() == 's') | (command.lower() == "status")):
-                print("APRS key: " + c.aprsKey)
-                print("Output mode: " + c.mode)
-                print("Update occurs every " + str(c.timer + 2) + " sec")
-                print("Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]")
-                print("TCP_IP: " + c.TCP_IP)
-                print("TCP_PORT: " + c.TCP_PORT + "\n")
-                print("Program has been running for " + str(c.n * (c.timer + 2) / 60) + " min")
+                print("APRS key: " + c.aprsKey +
+                      "Output mode: " + c.mode +
+                      "Update occurs every " + str(c.timer + 2) + " sec" +
+                      "Telescope coordinates : [" + str(c.refPos[0]) + ", " + str(c.refPos[1]) + ", " + str(c.refPos[2]) + "]"
+                      "TCP_IP: " + c.TCP_IP +
+                      "TCP_PORT: " + c.TCP_PORT + "\n" +
+                      "Program has been running for " + str(round(c.n * (c.timer + 2) / 60), 4) + " min")#buggy
 
             # Data
             # Print most recent data
@@ -93,7 +100,8 @@ class userThread(threading.Thread):
                     newHA = float(ha)
                     newDEC = float(dec)
                     print("New (HA, DEC) offset will be (" + ha + ", " + dec + ")")
-                    val = input("Are you sure you want to change HA, DEC offset?\nType 'yes' to change, anything else to cancel\n")
+                    val = input("Are you sure you want to change HA, DEC offset?\n"
+                                "Type 'yes' to change, anything else to cancel\n")
                     if (val.lower() == "yes"):
                         c.offsetHA = newHA
                         c.offsetDEC = newDEC
@@ -101,8 +109,8 @@ class userThread(threading.Thread):
                     else:
                         print("Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
                 else:
-                    print("HA & DEC must be numbers")
-                    print("Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
+                    print("HA & DEC must be numbers\n"
+                          "Offset unchanged, still (" + str(c.offsetHA) + ", " + str(c.offsetDEC) + ")\n")
 
             # Pause
             # Pause/resume telescope movement, while maintaining tracking
@@ -117,7 +125,8 @@ class userThread(threading.Thread):
             # Quit
             # End program prematurely
             elif ((command.lower() == 'q') | (command.lower() == "quit")):
-                val = input("Are you sure you want to quit?\nType 'yes' to quit, anything else to cancel\n")
+                val = input("Are you sure you want to quit?\n"
+                            "Type 'yes' to quit, anything else to cancel\n")
                 if (val.lower() == "yes"):
                     print("Quitting ....")
                     c.live = 0
@@ -130,7 +139,8 @@ class userThread(threading.Thread):
             # Reset
             # Send telescope to HA 3.66 and DEC -6.8
             elif ((command.lower() == 'r') | (command.lower() == "reset")):
-                val = input("Are you sure you want to reset orientation to the default position?\nType 'yes' to move, anything else to cancel\n");
+                val = input("Are you sure you want to reset orientation to the default position?\n"
+                            "Type 'yes' to move, anything else to cancel\n")
                 if (val.lower() == "yes"):
                     defOut = ("#33,3.66,-6.8;")
                     print(">> " + defOut)

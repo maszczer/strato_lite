@@ -10,15 +10,15 @@ def checkNum(strIn):
 
 ## GLOBAL VARIABLES ##
 mode = "test"
-live = 1
-pause = 0
+live = 1; pause = 0
 
 # APRS key
 print("A valid APRS.fi key is required to begin tracking")
 aprsKey = ""; set = 0
 while (set == 0):
     aprsKey = input("> Enter registered APRS.fi key\n")
-    val = input("Is this correct?\nType 'yes' to confirm, anything else to re-enter\n")
+    val = input("Is this correct?\n"
+                "Type 'yes' to confirm, anything else to re-enter\n")
     if (val.lower() == "yes"):
         set = 1
 
@@ -31,7 +31,8 @@ while (set == 0):
     alt = input("> Enter telescope altitude (m)\n")
     if ((checkNum(lat) == 1) & (checkNum(lng) == 1) & (checkNum(alt) == 1) ):
         print("telescope coordinates : [" + lat + ", " + lng + ", " + alt + "]")
-        val = input("Is this correct?\nType 'yes' to confirm, anything else to re-enter\n")
+        val = input("Is this correct?\n"
+                    "Type 'yes' to confirm, anything else to re-enter\n")
         if (val.lower() == "yes"):
             refPos = [float(lat), float(lng), float(alt)]
             set = 1
@@ -42,13 +43,16 @@ while (set == 0):
 callsign = ""; set = 0
 while (set == 0):
     callsign = input("> Enter callsign\n")
-    val = input("Is this correct?\nType 'yes' to confirm, anything else to re-enter\n")
+    val = input("Is this correct?\n"
+                "Type 'yes' to confirm, anything else to re-enter\n")
     if (val.lower() == "yes"):
         set = 1
 
 # Time between calls to APRS
-# Timer is reduced by 2 seconds to account for
-# the 2 instances of time.sleep() in lite_functions.repeat()
+'''
+Timer is reduced by 2 seconds to account for
+the 2 instances of time.sleep() in lite_functions.repeat()
+'''
 timer = 0; set = 0
 while (set == 0):
     timer = input("> Enter time (sec) between each update (minimum time is 5 seconds)\n")
@@ -57,15 +61,23 @@ while (set == 0):
         if (timer < 5):
             print("Interval is too short\n")
         else:
-            timer -= 2
-            set = 1
+            timer -= 2; set = 1
     else:
         print("Input must be a number\n")
 
-# Data is stored in in log as a list [0:14]
-# [lat, lng, alt, time, timestamp, az, el, range, ha, dec, strOut, predLat, predLng, predAlt, source]
-# for each call to APRS
-# NOTE: strOut is the string sent to the telescope for a given call
+# log is a list containing data stored throughout the flight
+'''
+Each instance in the list will store a dictionary
+containing the following elements:
+    pos[]: stores [latitude, longitude, altitude]
+    azel[]: stores [azimuth, elevation, range]
+    hadec[]: stores [hourAngle, declination]
+    predPos[]: stores predicted [latitude, longitude, altitude]
+    aprsTime: timestamp from the aprs packet
+    userTime: timestamp from the user's system
+    commmand: string sent to the telescope
+    source: string for determining source of pos used
+'''
 log = []
 
 # number of iterations since last APRS update

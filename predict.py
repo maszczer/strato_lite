@@ -1,29 +1,31 @@
-import lite_config as c
-import lite_functions as fcn
+import setup as lite
+import setup.n as n
+import functions as fcn
 
 # User instrucitons
 '''
 WHAT YOU NEED TO KNOW BEFORE
 IMPLEMENTING A NEW PREDICTION ALGORITHM
 ---------------------------------------
-You will need to reference lite_config.py for global variables
+You will need to reference setup.py for global variables
 All flight data will be stored in this file
 
 REFERENCING DATA
 ----------------
-Data is stored in a 2D array. Access it using
-    c.log[i]
+Data is stored in a dictionary. Access it using
+    lite.log[i]["tag"]
 where 'i' indicates data stored at the ith interval
+and "tag" denotes the type of data being accessed
 NOTE: Indexing begins at i = 0
 
-The balloon's starting coordinates (geodetic) is not stored globally
+The balloon's current coordinates (geodetic) is not stored globally
 It is referenced by using
     pos
 
 GEODETIC COORDINATES
 -----------------------------
 To use data from the ith interval, use
-    c.log[i][j]
+    lite.log[i]["pos"][j]
 where 'j' indicates the latitude, longitude, or altitude
     latitude:  j = 0
     longitude: j = 1
@@ -32,19 +34,19 @@ where 'j' indicates the latitude, longitude, or altitude
 The balloon's starting coordinates (geodetic) can be referenced using
     pos[j]
     
-Previous predicted values can also be referenced from log[]
-    latitude:  j = 11
-    longitude: j = 12
-    altitude:  j = 13
+Previous predicted values can also be referenced using
+    lite.log[i]["predPos"][j]
+
 NOTE: You can only access predicted values for previous values
-Attempting to access c.log[c.n][j] for j = 11, 12, or 13 will throw an error
+Attempting to access lite.log[i]["predPos"] will throw an error
+You must use a time t | (t > 0) & (t < i)
 
 MOST RECENT DATA
 ----------------
 Data from the most recent interval is stored at
-    c.n
+    n
 Thus, you can reference the most recent data using
-    c.log[c.n]
+    lite.log[n]
 
 OUTPUT
 ------
@@ -61,19 +63,14 @@ IMPLEMENT YOUR ALGORITHM BELOW
 
 # An algorithm for predicting the balloon's next location
 def predict(pos):
-    if (c.n == 0):
+    if (n == 0):
         return pos
         ## MAKE ALL CHANGES BELOW ##
         ############################
-    elif (fcn.checkUpdate() == 0 & c.n > 2):
-        predLat = (c.log[c.n - 1][11] - c.log[c.n - 2][11]) * c.noUpdate + c.log[c.n - 1][11]
-        predLat = (c.log[c.n - 1][12] - c.log[c.n - 2][12]) * c.noUpdate + c.log[c.n - 1][12]
-        predLat = (c.log[c.n - 1][13] - c.log[c.n - 2][13]) * c.noUpdate + c.log[c.n - 1][13]
-
     else:
-        predLat = (c.log[c.n][0] - c.log[c.n - 1][0]) + c.log[c.n][0]
-        predLng = (c.log[c.n][1] - c.log[c.n - 1][1]) + c.log[c.n][1]
-        predAlt = (c.log[c.n][2] - c.log[c.n - 1][2]) + c.log[c.n][2]
+        predLat = (lite.log[n]["pos"][0] - lite.log[n - 1]["pos"][0] + lite.log[n]["pos"][0])
+        predLng = (lite.log[n]["pos"][1] - lite.log[n - 1]["pos"][1] + lite.log[n]["pos"][1])
+        predAlt = (lite.log[n]["pos"][2] - lite.log[n - 1]["pos"][2] + lite.log[n]["pos"][2])
 
         ############################
         ## MAKE ALL CHANGES ABOVE ##

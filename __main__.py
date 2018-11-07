@@ -15,7 +15,8 @@ def main():
 
         # ACTUAL
         elif (strIn.lower() == "actual"):
-            strIn = input("Telescope will begin moving\nAre you sure you want to begin ACTUAL?\n")
+            strIn = input("Telescope will begin moving\n"
+                          "Are you sure you want to begin ACTUAL?\n")
             if (strIn.lower == "yes"):
                 ## TCP/IP ##
                 print("Connecting to telescope ....\n")
@@ -23,7 +24,8 @@ def main():
                 while (n == 0):
                     strIn = input("> Enter IP address")
                     print("IP address : " + strIn)
-                    if (input("Is this correct?\nType 'yes' to confirm, anything else to re-enter\n") == "yes"):
+                    if (input("Is this correct?\n"
+                              "Type 'yes' to confirm, anything else to re-enter\n") == "yes"):
                         n = 1
                 TCP_IP = strIn
                 c.TCP_IP = TCP_IP
@@ -32,7 +34,8 @@ def main():
                 while (n == 0):
                     strIn = input("> Enter port number")
                     print("Port number : " + strIn)
-                    if (input("Is this correct?\nType 'yes' to confirm, anything else to re-enter\n") == "yes"):
+                    if (input("Is this correct?\n"
+                              "Type 'yes' to confirm, anything else to re-enter\n") == "yes"):
                         n = 1
                 TCP_PORT = strIn
                 c.TCP_PORT = TCP_PORT
@@ -42,8 +45,7 @@ def main():
                 c.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 c.sock.connect((TCP_IP, TCP_PORT))
                 print("Connection established ....\n")
-                c.mode = "actual"
-                selected = 1
+                c.mode = "actual"; selected = 1
                 print("Running ACTUAL ....\n")
 
             else:
@@ -69,8 +71,12 @@ TODO
 [x] Update recurring print for time, aprs data, predicted HA, DEC, any offset, time since last APRS update, etc
 [x] Implement data 'd' to print more detailed info for most recent data
 [ ] Print error from previous data
+[ ] Opt to pull from either GroundStation or APRS, else predicted values
+ * Will GroundStation feed dupliacte values if we don't read data? <-- do this
+[ ] Write function to determine if getting new data from GroundStation or APRS
 
 NOTE
  * If GPS data is pulled instead of APRS.fi, make sure format is compatible
  * Predicted location is only valid for 1st instance after losing APRS (currently)
+ * Predictor will handle offset
 '''

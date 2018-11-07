@@ -1,8 +1,8 @@
+import functions as fcn
 import setup as lite
 import setup.n as n
-import functions as fcn
 
-# User instrucitons
+# User instructions
 '''
 WHAT YOU NEED TO KNOW BEFORE
 IMPLEMENTING A NEW PREDICTION ALGORITHM

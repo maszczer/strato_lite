@@ -1,6 +1,6 @@
-import lite_threading as thread
-import lite_config as c
 import socket
+import setup as lite
+import threads
 
 def main():
     # Select a mode to run - TEST or ACTUAL
@@ -28,7 +28,7 @@ def main():
                               "Type 'yes' to confirm, anything else to re-enter\n") == "yes"):
                         n = 1
                 TCP_IP = strIn
-                c.TCP_IP = TCP_IP
+                lite.TCP_IP = TCP_IP
 
                 n = 0; strIn = "null"
                 while (n == 0):
@@ -38,14 +38,14 @@ def main():
                               "Type 'yes' to confirm, anything else to re-enter\n") == "yes"):
                         n = 1
                 TCP_PORT = strIn
-                c.TCP_PORT = TCP_PORT
+                lite.TCP_PORT = TCP_PORT
                 TCP_PORT = float(TCP_PORT)
 
-                c.sock = socket.socket
-                c.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                c.sock.connect((TCP_IP, TCP_PORT))
+                lite.sock = socket.socket
+                lite.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                lite.sock.connect((TCP_IP, TCP_PORT))
                 print("Connection established ....\n")
-                c.mode = "actual"; selected = 1
+                lite.mode = "actual"; selected = 1
                 print("Running ACTUAL ....\n")
 
             else:
@@ -54,8 +54,8 @@ def main():
         else:
             print("Invalid mode\n")
 
-    threadA = thread.autoThread()
-    threadB = thread.userThread()
+    threadA = threads.autoThread()
+    threadB = threads.userThread()
     threadA.start()
     threadB.start()
 

@@ -1,9 +1,8 @@
 import datetime, math
 import pymap3d as pm
 import time, urllib.request
-import setup as lite
-import setup.n as n
 import predict
+import setup as lite
 
 # Converts coordinates from AZ, EL to HA, DEC
 def AZELtoHADEC(AZEL):
@@ -135,4 +134,5 @@ def repeat():
     if (lite.mode == "actual"):
         lite.sock.send(bytes(strOut, 'utf-8'))
 
+    lite.log.append(data)
     time.sleep(1)

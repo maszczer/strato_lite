@@ -49,10 +49,8 @@ while (set == 0):
         set = 1
 
 # Time between calls to APRS
-'''
-Timer is reduced by 2 seconds to account for
-the 2 instances of time.sleep() in lite_functions.repeat()
-'''
+# Timer is reduced by 2 seconds to account for
+# the 2 instances of time.sleep() in lite_functions.repeat()
 timer = 0; set = 0
 while (set == 0):
     timer = input("> Enter time (sec) between each update (minimum time is 5 seconds)\n")

@@ -3,6 +3,7 @@ import pymap3d as pm
 import time, urllib.request
 import predict
 import setup as lite
+import setup.n as n
 
 # Converts coordinates from AZ, EL to HA, DEC
 def AZELtoHADEC(AZEL):
@@ -84,12 +85,15 @@ def checkUpdate():
 # Repeat these functions within loop
 def repeat():
     data = {}
+
+    # Get current position
     entry = getCoord()
     data["pos"] = entry[0:3]
     data["aprsTime"] = entry[3]
     data["userTime"] = datetime.datetime.now()
     balloonPos = [entry[0], entry[1], entry[2]]
 
+    # Get predicted position
     predPos = predict.predict(balloonPos)
     data["predPos"] = predPos
     source = "aprs"

@@ -9,7 +9,7 @@ class autoThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        # output log to csv
+        # Output log to csv
         filename = 'tracking_' + lite.mode + '_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
         with open(filename, 'w') as myfile:
             writer = csv.writer(myfile, delimiter=',', lineterminator='\n', quoting=csv.QUOTE_ALL)
@@ -32,7 +32,7 @@ class autoThread(threading.Thread):
                     data.append(liteData["source"])
                 writer.writerow(data)
                 # Flush buffer, force write to .csv
-                myfile.flush() # flushes buffer, forces write to .csv
+                myfile.flush()
                 lite.printed = 1
                 lite.n += 1
                 time.sleep(lite.timer)
@@ -61,10 +61,12 @@ class userThread(threading.Thread):
                 print("APRS key: " + lite.aprsKey +
                       "Output mode: " + lite.mode +
                       "Update occurs every " + str(lite.timer + 2) + " sec" +
-                      "Telescope coordinates : [" + str(lite.refPos[0]) + ", " + str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]"
+                      "Telescope coordinates : [" + str(lite.refPos[0]) + ", "+
+                      str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]"
                       "TCP_IP: " + lite.TCP_IP +
                       "TCP_PORT: " + lite.TCP_PORT + "\n" +
-                      "Program has been running for " + str(round(lite.n * (lite.timer + 2) / 60), 4) + " min")#buggy
+                      "Program has been running for " +
+                      str(round(lite.n * (lite.timer + 2) / 60), 4) + " min")#buggy
 
             # Data
             # Print most recent data
@@ -159,12 +161,12 @@ class userThread(threading.Thread):
                 if (val.lower() == "yes"):
                     defOut = ("#33,3.66,-6.8;")
                     print(">> " + defOut)
-                    if (c.mode == "actual"):
-                        c.sock.send(bytes(defOut, 'utf-8'))
+                    if (lite.mode == "actual"):
+                        lite.sock.send(bytes(defOut, 'utf-8'))
                     defOut = ("#12;")
                     print(">> " + defOut + "\n")
-                    if (c.mode == "actual"):
-                        c.sock.send(bytes(defOut, 'utf-8'))
+                    if (lite.mode == "actual"):
+                        lite.sock.send(bytes(defOut, 'utf-8'))
                 else:
                     print("Resuming tracking ....\n")
 

@@ -1,4 +1,5 @@
 import datetime, math
+import numpy as np
 import pymap3d as pm
 import time, urllib.request
 import predict
@@ -70,11 +71,9 @@ def getCoord():
 Return 0 if no update has occured
 Return 1 if updated has occured
 '''
-def checkUpdate():
+def checkUpdate(pos):
     if (lite.n > 0):
-        if ((lite.log[lite.n]["pos"][0] == lite.log[lite.n - 1]["pos"][0])
-            & (lite.log[lite.n]["pos"][1] == lite.log[lite.n - 1]["pos"][1])
-            & (lite.log[lite.n]["pos"][2] == lite.log[lite.n - 1]["pos"][2])):
+        if (np.array_equal(pos, lite.log[lite.n - 1]["pos"])):
             return 0
         else:
             return 1
@@ -98,8 +97,8 @@ def repeat():
     source = "aprs"
 
     # Check if update has occured
-    if (len(lite.log) - 1 > 0):
-        if (checkUpdate() == 0):
+    if (len(lite.log) > 1):
+        if (checkUpdate(entry[0:3]) == 0):
             source = "pred"; lite.noUpdate += 1
         else:
             lite.noUpdate = 0

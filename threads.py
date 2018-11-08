@@ -86,7 +86,7 @@ class userThread(threading.Thread):
                               " w/ offset " + str(lite.offsetHA) + "\n"
                               "  DEC: " + str(lite.log[val]["hadec"][1]) + " deg" +
                               " w/ offset " + str(lite.offsetDEC) + "\n" +
-                              "Predicted\n" +
+                              "Predicted:\n" +
                               "  LAT: " + str(lite.log[val]["predPos"][0]) + " deg\n" +
                               "  LNG: " + str(lite.log[val]["predPos"][1]) + " deg\n" +
                               "  ALT: " + str(lite.log[val]["predPos"][2]) + " m\n" +

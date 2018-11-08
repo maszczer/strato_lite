@@ -3,7 +3,6 @@ import pymap3d as pm
 import time, urllib.request
 import predict
 import setup as lite
-import setup.n as n
 
 # Converts coordinates from AZ, EL to HA, DEC
 def AZELtoHADEC(AZEL):
@@ -72,10 +71,10 @@ Return 0 if no update has occured
 Return 1 if updated has occured
 '''
 def checkUpdate():
-    if (n > 0):
-        if ((lite.log[n]["pos"][0] == lite.log[n-1]["pos"][0])
-            & (lite.log[n]["pos"][1] == lite.log[n-1]["pos"][1])
-            & (lite.log[n]["pos"][2] == lite.log[n-1]["pos"][2])):
+    if (lite.n > 0):
+        if ((lite.log[lite.n]["pos"][0] == lite.log[lite.n - 1]["pos"][0])
+            & (lite.log[lite.n]["pos"][1] == lite.log[lite.n - 1]["pos"][1])
+            & (lite.log[lite.n]["pos"][2] == lite.log[lite.n - 1]["pos"][2])):
             return 0
         else:
             return 1
@@ -123,13 +122,13 @@ def repeat():
     data["hadec"] = [predOut]
 
     # String command sent to telescope
-    strOut = ("#33," + str(predOut[0]) + "," + str(predOut[1]) + ";\n")
+    strOut = ("#33," + str(predOut[0]) + "," + str(predOut[1]) + ";")
     time.sleep(1)
     # minimum elevation for telescope movement is 16 deg
     if ((lite.pause == 0) & (el > 16)):
-        strOut = ("#12;\n")
+        strOut = ("#12;")
     data["command"] = strOut
-    print(">> " + strOut)
+    print(">> " + strOut + "\n")
 
     if (lite.noUpdate == 0):
         print("Data is up to date")

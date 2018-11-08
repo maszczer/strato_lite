@@ -20,21 +20,19 @@ class autoThread(threading.Thread):
             while (lite.live == 1):
                 fcn.repeat()
                 # Send new log[] data to .csv
-                data = []
-                with lite.log[lite.n] as liteData:
-                    data.extend(liteData["pos"])
-                    data.append(liteData["aprsTime"])
-                    data.append(liteData["userTime"])
-                    data.extend(liteData["azel"])
-                    data.extend(liteData["hadec"])
-                    data.append(liteData["command"])
-                    data.extend(liteData["predPos"])
-                    data.append(liteData["source"])
+                data = lite.log[lite.n]["pos"]
+                data.append(lite.log[lite.n]["aprsTime"])
+                data.append(lite.log[lite.n]["userTime"])
+                data.extend(lite.log[lite.n]["azel"])
+                data.extend(lite.log[lite.n]["hadec"])
+                data.append(lite.log[lite.n]["command"])
+                data.extend(lite.log[lite.n]["predPos"])
+                data.append(lite.log[lite.n]["source"])
                 writer.writerow(data)
                 # Flush buffer, force write to .csv
                 myfile.flush()
-                lite.printed = 1
                 lite.n += 1
+                lite.printed = 1
                 time.sleep(lite.timer)
 
 # userThread allows for commands during flight
@@ -58,15 +56,15 @@ class userThread(threading.Thread):
             # Status
             # Print flight setup info
             elif ((command.lower() == 's') | (command.lower() == "status")):
-                print("APRS key: " + lite.aprsKey +
-                      "Output mode: " + lite.mode +
-                      "Update occurs every " + str(lite.timer + 2) + " sec" +
-                      "Telescope coordinates : [" + str(lite.refPos[0]) + ", "+
-                      str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]"
-                      "TCP_IP: " + lite.TCP_IP +
+                print("APRS key: " + lite.aprsKey + "\n" +
+                      "Output mode: " + lite.mode + "\n" +
+                      "Update occurs every " + str(lite.timer + 2) + " sec" + "\n" +
+                      "Telescope coordinates : [" + str(lite.refPos[0]) + ", " +
+                      str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]\n"
+                      "TCP_IP: " + lite.TCP_IP + "\n" +
                       "TCP_PORT: " + lite.TCP_PORT + "\n" +
                       "Program has been running for " +
-                      str(round(lite.n * (lite.timer + 2) / 60), 4) + " min")#buggy
+                      str(round(lite.n * (lite.timer + 2) / 60, 4)) + " min")#buggy
 
             # Data
             # Print most recent data
@@ -76,24 +74,23 @@ class userThread(threading.Thread):
                     val = 0
                     if (lite.n > 0):
                         val = lite.n - 1
-                        with lite.log[val] as liteData:
-                            print("Using " + liteData["source"] + " data:\n" +
-                                  "  LAT: " + str(liteData["pos"][0]) + " deg\n" +
-                                  "  LNG: " + str(liteData["pos"][1]) + " deg\n" +
-                                  "  ALT: " + str(liteData["pos"][2]) + " m\n" +
-                                  " TIME: " + str(liteData["aprsTime"]) + "\n" +
-                                  "   AZ: " + str(liteData["azel"][0]) + " deg\n" +
-                                  "   EL: " + str(liteData["azel"][1]) + " deg\n" +
-                                  "RANGE: " + str(liteData["azel"][2]) + " m\n" +
-                                  "   HA: " + str(liteData["hadec"][0]) + " deg" +
-                                  " w/ offset " + str(lite.offsetHA) + "\n"
-                                  "  DEC: " + str(liteData["hadec"][1]) + " deg" +
-                                  " w/ offset " + str(lite.offsetDEC) + "\n" +
-                                  "Predicted\n" +
-                                  "  LAT: " + str(liteData["predPos"][0]) + " deg\n" +
-                                  "  LNG: " + str(liteData["predPos"][1]) + " deg\n" +
-                                  "  ALT: " + str(liteData["predPos"][2]) + " m\n" +
-                                  ">> " + liteData["command"])
+                        print("Using " + lite.log[val]["source"] + " data:\n" +
+                              "  LAT: " + str(lite.log[val]["pos"][0]) + " deg\n" +
+                              "  LNG: " + str(lite.log[val]["pos"][1]) + " deg\n" +
+                              "  ALT: " + str(lite.log[val]["pos"][2]) + " m\n" +
+                              " TIME: " + str(lite.log[val]["aprsTime"]) + "\n" +
+                              "   AZ: " + str(lite.log[val]["azel"][0]) + " deg\n" +
+                              "   EL: " + str(lite.log[val]["azel"][1]) + " deg\n" +
+                              "RANGE: " + str(lite.log[val]["azel"][2]) + " m\n" +
+                              "   HA: " + str(lite.log[val]["hadec"][0]) + " deg" +
+                              " w/ offset " + str(lite.offsetHA) + "\n"
+                              "  DEC: " + str(lite.log[val]["hadec"][1]) + " deg" +
+                              " w/ offset " + str(lite.offsetDEC) + "\n" +
+                              "Predicted\n" +
+                              "  LAT: " + str(lite.log[val]["predPos"][0]) + " deg\n" +
+                              "  LNG: " + str(lite.log[val]["predPos"][1]) + " deg\n" +
+                              "  ALT: " + str(lite.log[val]["predPos"][2]) + " m\n" +
+                              ">> " + lite.log[val]["command"])
                     if (lite.noUpdate == 0):
                         print("Data is up to date")
                     else:

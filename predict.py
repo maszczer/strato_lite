@@ -1,6 +1,5 @@
 import functions as fcn
 import setup as lite
-import setup.n as n
 
 # User instructions
 '''
@@ -63,15 +62,20 @@ IMPLEMENT YOUR ALGORITHM BELOW
 
 # An algorithm for predicting the balloon's next location
 def predict(pos):
-    if (n == 0):
+    if (lite.n == 0):
         return pos
+    else:
+        n = lite.n
+        predLat = pos[0]
+        predLng = pos[1]
+        predAlt = pos[2]
         ## MAKE ALL CHANGES BELOW ##
         ############################
-    else:
-        predLat = (lite.log[n]["pos"][0] - lite.log[n - 1]["pos"][0] + lite.log[n]["pos"][0])
-        predLng = (lite.log[n]["pos"][1] - lite.log[n - 1]["pos"][1] + lite.log[n]["pos"][1])
-        predAlt = (lite.log[n]["pos"][2] - lite.log[n - 1]["pos"][2] + lite.log[n]["pos"][2])
+        if (n > 0):
+            predLat = (2 * lite.log[n]["pos"][0] - lite.log[n - 1]["pos"][0])
+            predLng = (2 * lite.log[n]["pos"][1] - lite.log[n - 1]["pos"][1])
+            predAlt = (2 * lite.log[n]["pos"][2] - lite.log[n - 1]["pos"][2])
 
         ############################
         ## MAKE ALL CHANGES ABOVE ##
-        return [(predLat), (predLng), (predAlt)]
+    return [(predLat), (predLng), (predAlt)]

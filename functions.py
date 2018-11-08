@@ -119,7 +119,7 @@ def repeat():
           "  DEC: " + str(round(predOut[1], 4)) + " deg")
 
     data["azel"] = [az, el, range]
-    data["hadec"] = [predOut]
+    data["hadec"] = predOut
 
     # String command sent to telescope
     strOut = ("#33," + str(predOut[0]) + "," + str(predOut[1]) + ";")

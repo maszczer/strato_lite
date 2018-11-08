@@ -72,9 +72,9 @@ def predict(pos):
         ## MAKE ALL CHANGES BELOW ##
         ############################
         if (n > 0):
-            predLat = (2 * lite.log[n]["pos"][0] - lite.log[n - 1]["pos"][0])
-            predLng = (2 * lite.log[n]["pos"][1] - lite.log[n - 1]["pos"][1])
-            predAlt = (2 * lite.log[n]["pos"][2] - lite.log[n - 1]["pos"][2])
+            predLat = (2 * pos[0] - lite.log[n - 1]["pos"][0])
+            predLng = (2 * pos[1] - lite.log[n - 1]["pos"][1])
+            predAlt = (2 * pos[2] - lite.log[n - 1]["pos"][2])
 
         ############################
         ## MAKE ALL CHANGES ABOVE ##

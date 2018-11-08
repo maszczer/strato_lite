@@ -13,8 +13,8 @@ class autoThread(threading.Thread):
         filename = 'tracking_' + lite.mode + '_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
         with open(filename, 'w') as myfile:
             writer = csv.writer(myfile, delimiter=',', lineterminator='\n', quoting=csv.QUOTE_ALL)
-            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "APRS timestamp","user timestamp", "az (deg)",
-                             "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)",
+            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "APRS timestamp","user timestamp",
+                             "az (deg)", "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)",
                              "predLat (deg)", "predLng (deg)", "predAlt (m)", "source"])
 
             while (lite.live == 1):

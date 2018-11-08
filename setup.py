@@ -81,12 +81,15 @@ log = []
 # number of iterations since last APRS update
 noUpdate = 0
 
+# Current iteration
 n = 0
+
+# Manually added offset
 offsetHA = 0.00
 offsetDEC = 0.00
 
-# printed indicates if any data has been pulled
-# error will occur when calling 'data' or 'status' before any data has been pulled
+# Indicates if any data has been pulled
+# An error will occur when calling 'data' or 'status' before any data has been pulled
 printed = 0
 
 # socket for sending commands in tracking_ACTUAL

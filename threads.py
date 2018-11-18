@@ -1,172 +1,66 @@
 import csv, datetime, time
-import functions as fcn
 import setup as lite
-import threading
+import commands as cmd
+import functions as fcn
 
-# autoThread sends commands to the telescope while live == 1
-class autoThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
+''' Pulls data from APRS, performs calculations, & outputs to .csv file '''
+def autoThread():
+    # Output log to csv
+    filename = 'tracking_' + lite.mode + '_'\
+               + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
+    with open(filename, 'w') as myfile:
+        writer = csv.writer(myfile, delimiter=',',
+                            lineterminator='\n', quoting=csv.QUOTE_ALL)
+        writer.writerow([
+            "lat (deg)",
+            "lng (deg)",
+            "alt (m)",
+            "APRS timestamp",
+            "user timestamp",
+            "az (deg)",
+            "el (deg)",
+            "range (m)",
+            "ha (deg)",
+            "dec (deg)",
+            "predLat (deg)",
+            "predLng (deg)",
+            "predAlt (m)",
+            "command",
+            "source"
+        ])
 
-    def run(self):
-        # Output log to csv
-        filename = 'tracking_' + lite.mode + '_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
-        with open(filename, 'w') as myfile:
-            writer = csv.writer(myfile, delimiter=',', lineterminator='\n', quoting=csv.QUOTE_ALL)
-            writer.writerow(["lat (deg)", "lng (deg)", "alt (m)", "APRS timestamp","user timestamp",
-                             "az (deg)", "el (deg)", "range (m)", "ha (deg)", "dec (deg)", "command (strOut)",
-                             "predLat (deg)", "predLng (deg)", "predAlt (m)", "source"])
-
-            while (lite.live == 1):
-                fcn.repeat()
-                # Send new log[] data to .csv
-                data = lite.log[lite.n]["pos"]
-                data.append(lite.log[lite.n]["aprsTime"])
-                data.append(lite.log[lite.n]["userTime"])
-                data.extend(lite.log[lite.n]["azel"])
-                data.extend(lite.log[lite.n]["hadec"])
-                data.append(lite.log[lite.n]["command"])
-                data.extend(lite.log[lite.n]["predPos"])
-                data.append(lite.log[lite.n]["source"])
-                writer.writerow(data)
-                # Flush buffer, force write to .csv
-                myfile.flush()
-                lite.n += 1
-                lite.printed = 1
-                time.sleep(lite.timer)
-
-# userThread allows for commands during flight
-class userThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-
-    def run(self):
         while (lite.live == 1):
-            command = input("(Type 'h' or 'help' to list commands)\n")
-            # Help
-            # List commands
-            if ((command.lower() == 'h') | (command.lower() == "help")):
-                print("'d' or 'data' display most recent data\n"
-                      "'p' or 'pause' pause telescope movement (toggles on/off)\n"
-                      "'o' or 'offset' change offset to HA, DEC\n"
-                      "'r' or 'reset' orient telescope to default position\n"
-                      "'s' or 'status' display flight setup info\n"
-                      "'q' or 'quit' quit program\n")
+            fcn.repeat()
+            # Send new log[] data to .csv
+            data = []
+            logData = ["pos", "aprsTime", "userTime", "azel",
+                       "hadec", "predPos", "command", "source"]
+            for datum in logData:
+                try:
+                    data.extend(lite.log[lite.n][datum])
+                except TypeError:
+                    data.append(lite.log[lite.n][datum])
+            writer.writerow(data)
+            # Flush buffer, force write to .csv
+            myfile.flush()
+            lite.n += 1
+            lite.printed = 1
+            time.sleep(lite.timer)
 
-            # Status
-            # Print flight setup info
-            elif ((command.lower() == 's') | (command.lower() == "status")):
-                print("APRS key: " + lite.aprsKey + "\n" +
-                      "Output mode: " + lite.mode + "\n" +
-                      "Update occurs every " + str(lite.timer + 2) + " sec" + "\n" +
-                      "Telescope coordinates : [" + str(lite.refPos[0]) + ", " +
-                      str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]\n"
-                      "TCP_IP: " + lite.TCP_IP + "\n" +
-                      "TCP_PORT: " + lite.TCP_PORT + "\n" +
-                      "Program has been running for " +
-                      str(round(lite.n * (lite.timer + 2) / 60, 4)) + " min")#buggy
-
-            # Data
-            # Print most recent data
-            # Will be more detailed than standard output
-            elif ((command.lower() == 'd') | (command.lower() == "data")):
-                if (lite.printed == 1):
-                    val = 0
-                    if (lite.n > 0):
-                        val = lite.n - 1
-                        print("Using " + lite.log[val]["source"] + " data:\n" +
-                              "  LAT: " + str(lite.log[val]["pos"][0]) + " deg\n" +
-                              "  LNG: " + str(lite.log[val]["pos"][1]) + " deg\n" +
-                              "  ALT: " + str(lite.log[val]["pos"][2]) + " m\n" +
-                              " TIME: " + str(lite.log[val]["aprsTime"]) + "\n" +
-                              "   AZ: " + str(lite.log[val]["azel"][0]) + " deg\n" +
-                              "   EL: " + str(lite.log[val]["azel"][1]) + " deg\n" +
-                              "RANGE: " + str(lite.log[val]["azel"][2]) + " m\n" +
-                              "   HA: " + str(lite.log[val]["hadec"][0]) + " deg" +
-                              " w/ offset " + str(lite.offsetHA) + "\n"
-                              "  DEC: " + str(lite.log[val]["hadec"][1]) + " deg" +
-                              " w/ offset " + str(lite.offsetDEC) + "\n" +
-                              "Predicted:\n" +
-                              "  LAT: " + str(lite.log[val]["predPos"][0]) + " deg\n" +
-                              "  LNG: " + str(lite.log[val]["predPos"][1]) + " deg\n" +
-                              "  ALT: " + str(lite.log[val]["predPos"][2]) + " m\n" +
-                              ">> " + lite.log[val]["command"])
-                    if (lite.noUpdate == 0):
-                        print("Data is up to date")
-                    else:
-                        print("Calls since last update: " + str(lite.noUpdate))
-                    print(str(lite.log[val]["userTime"]))
-                    if (lite.pause == 1):
-                        print("Telescope movement is paused\n")
-                    else:
-                        print("Telescope movement is active\n")
-                else:
-                    print("Loading data, please wait and try again\n")
-
-            # Offset
-            # Change offset for HA, DEC
-            elif ((command.lower() == 'o') | (command.lower() == "offset")):
-                print(" HA offset = " + str(lite.offsetHA) +
-                      "DEC offset = " + str(lite.offsetDEC))
-                ha = input("> Enter new HA offset\n")
-                dec = input("> Enter new DEC offset\n")
-                if((lite.checkNum(ha) == 1) & (lite.checkNum(dec))):
-                    newHA = float(ha)
-                    newDEC = float(dec)
-                    print("New (HA, DEC) offset will be (" + ha + ", " + dec + ")")
-                    val = input("Are you sure you want to change HA, DEC offset?\n"
-                                "Type 'yes' to change, anything else to cancel\n")
-                    if (val.lower() == "yes"):
-                        lite.offsetHA = newHA
-                        lite.offsetDEC = newDEC
-                        print("Offset changed to (" + str(lite.offsetHA) + ", " + str(lite.offsetDEC) + ")\n")
-                    else:
-                        print("Offset unchanged, still (" + str(lite.offsetHA) + ", " + str(lite.offsetDEC) + ")\n")
-                else:
-                    print("HA & DEC must be numbers\n"
-                          "Offset unchanged, still (" + str(lite.offsetHA) + ", " + str(lite.offsetDEC) + ")\n")
-
-            # Pause
-            # Pause/resume telescope movement, while maintaining tracking
-            elif ((command.lower() == 'p') | (command.lower() == "pause")):
-                if (lite.pause == 0):
-                    lite.pause = 1
-                    print("Telescope movement is paused\n")
-                else:
-                    lite.pause = 0
-                    print("Resuming telescope movement ....\n")
-
-            # Quit
-            # End program prematurely
-            elif ((command.lower() == 'q') | (command.lower() == "quit")):
-                val = input("Are you sure you want to quit?\n"
-                            "Type 'yes' to quit, anything else to cancel\n")
-                if (val.lower() == "yes"):
-                    print("Quitting ....")
-                    lite.live = 0
-                    if (lite.mode == "actual"):
-                        lite.sock.close()
-                    exit(0)
-                else :
-                    print("Resuming tracking ....\n")
-
-            # Reset
-            # Send telescope to HA 3.66 and DEC -6.8
-            elif ((command.lower() == 'r') | (command.lower() == "reset")):
-                val = input("Are you sure you want to reset orientation to the default position?\n"
-                            "Type 'yes' to move, anything else to cancel\n")
-                if (val.lower() == "yes"):
-                    defOut = ("#33,3.66,-6.8;")
-                    print(">> " + defOut)
-                    if (lite.mode == "actual"):
-                        lite.sock.send(bytes(defOut, 'utf-8'))
-                    defOut = ("#12;")
-                    print(">> " + defOut + "\n")
-                    if (lite.mode == "actual"):
-                        lite.sock.send(bytes(defOut, 'utf-8'))
-                else:
-                    print("Resuming tracking ....\n")
-
-            # No other valid commands
-            else:
-                print("Invalid command\n")
+''' Handles mid-flight user commands '''
+def userThread():
+    while lite.live:
+        command = input("Type 'h' or 'help' to list commands\n")
+        options = {
+            "h": cmd.listCmds, "help": cmd.listCmds,
+            "s": cmd.status, "status": cmd.status,
+            "d": cmd.data, "data": cmd.data,
+            "o": cmd.offset, "offset": cmd.offset,
+            "p": cmd.pause, "pause": cmd.pause,
+            "q": cmd.shutdown, "quit": cmd.shutdown,
+            "r": cmd.reset, "reset": cmd.reset,
+        }
+        try:
+            options[command]()
+        except KeyError:
+            print("Invalid command\n")

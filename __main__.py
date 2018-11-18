@@ -1,4 +1,4 @@
-import socket
+import socket, threading
 import setup as lite
 import threads
 
@@ -8,12 +8,12 @@ def main():
     print("LITE has two modes for tracking")
     while (selected == 0):
         strIn = input("Run as 'TEST' or 'ACTUAL'?\n")
-        # TEST
+        ## TEST ##
         if (strIn.lower() == "test"):
             selected = 1
             print("Running TEST ....\n")
 
-        # ACTUAL
+        ## ACTUAL ##
         elif (strIn.lower() == "actual"):
             strIn = input("Telescope will begin moving\n"
                           "Are you sure you want to begin ACTUAL?\n")
@@ -54,10 +54,10 @@ def main():
         else:
             print("Invalid mode\n")
 
-    threadA = threads.autoThread()
-    threadB = threads.userThread()
-    threadA.start()
-    threadB.start()
+    autoThread = threading.Thread(target=threads.autoThread())
+    userThread = threading.Thread(target=threads.userThread())
+    autoThread.start()
+    userThread.start()
 
 if (__name__ == "__main__"):
     main()

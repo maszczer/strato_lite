@@ -1,77 +1,92 @@
-import socket
+"""
+Setup variables to be used globally throughout program
+"""
 
-# Checks if string contains only a numeric value
+''' Return true if string is a numerical value '''
 def checkNum(strIn):
     try:
         float(strIn)
-        return 1
+        return True
     except ValueError:
-        return 0
+        return False
+
+''' Generic value for setting variable's value from user input '''
+def setVar(varStr):
+    while True:
+        var = input("> Enter " + varStr + "\n")
+        confirm = input("Is this correct?\n"
+                        "Type 'yes' to confirm, anything else to re-enter\n")
+        if confirm.lower() == "yes":
+            break
+
+    return var
+
+''' Set reference position (geodetic) from user input '''
+def setRefPos():
+    refPos = []
+    print("Geodetic coordinates of telescope required")
+    while True:
+        lat = input("> Enter telescope latitude (deg)\n")
+        lng = input("> Enter telescope longitude (deg)\n")
+        alt = input("> Enter telescope altitude (m)\n")
+        if checkNum(lat) and checkNum(lng) and checkNum(alt):
+            print("telescope coordinates : [" + lat + ", " + lng + ", " + alt + "]")
+            confirm = input("Is this correct?\n"
+                            "Type 'yes' to confirm, anything else to re-enter\n")
+            if confirm.lower() == "yes":
+                refPos = [float(lat), float(lng), float(alt)]
+                break
+        else:
+            print("Latitude, longitude, and altitude must be numbers\n")
+
+    return refPos
+
+''' Set time between calls to APRS '''
+def setTimer():
+    timer = 0
+    while True:
+        timer = input("> Enter time (sec) between each update (minimum time is 5 seconds)\n")
+        if checkNum(timer):
+            timer = float(timer)
+            if timer < 5:
+                print("Interval is too short\n")
+            else:
+                timer -= 2
+                break
+        else:
+            print("Input must be a number\n")
+
+    return timer
+
 
 ## GLOBAL VARIABLES ##
 mode = "test"
-live = 1; pause = 0
+live = True
+pause = False
 
 # APRS key
 print("A valid APRS.fi key is required to begin tracking")
-aprsKey = ""; set = 0
-while (set == 0):
-    aprsKey = input("> Enter registered APRS.fi key\n")
-    val = input("Is this correct?\n"
-                "Type 'yes' to confirm, anything else to re-enter\n")
-    if (val.lower() == "yes"):
-        set = 1
+aprsKey = setVar("a registered APRS.fi key")
 
-# Reference position (geodetic)
-refPos = []; set = 0
-print("Geodetic coordinates of telescope required")
-while (set == 0):
-    lat = input("> Enter telescope latitude (deg)\n")
-    lng = input("> Enter telescope longitude (deg)\n")
-    alt = input("> Enter telescope altitude (m)\n")
-    if ((checkNum(lat) == 1) & (checkNum(lng) == 1) & (checkNum(alt) == 1) ):
-        print("telescope coordinates : [" + lat + ", " + lng + ", " + alt + "]")
-        val = input("Is this correct?\n"
-                    "Type 'yes' to confirm, anything else to re-enter\n")
-        if (val.lower() == "yes"):
-            refPos = [float(lat), float(lng), float(alt)]
-            set = 1
-    else:
-        print("Latitude, longitude, & altitude must be numbers\n")
+# Reference Position (geodetic)
+refPos = setRefPos()
 
 # Callsign to track
-callsign = ""; set = 0
-while (set == 0):
-    callsign = input("> Enter callsign\n")
-    val = input("Is this correct?\n"
-                "Type 'yes' to confirm, anything else to re-enter\n")
-    if (val.lower() == "yes"):
-        set = 1
+callsign = setVar("callsign")
 
 # Time between calls to APRS
-# Timer is reduced by 2 seconds to account for
-# the 2 instances of time.sleep() in lite_functions.repeat()
-timer = 0; set = 0
-while (set == 0):
-    timer = input("> Enter time (sec) between each update (minimum time is 5 seconds)\n")
-    if (checkNum(timer) == 1):
-        timer = float(timer)
-        if (timer < 5):
-            print("Interval is too short\n")
-        else:
-            timer -= 2; set = 1
-    else:
-        print("Input must be a number\n")
+timer = setTimer()
 
-# log is a list containing data stored throughout the flight
 '''
+log is a list containing data stored throughout the flight
+----------------------------------------------------------
 Each instance in the list will store a dictionary
 containing the following elements:
     pos[]: stores [latitude, longitude, altitude]
     azel[]: stores [azimuth, elevation, range]
     hadec[]: stores [hourAngle, declination]
     predPos[]: stores predicted [latitude, longitude, altitude]
-    aprsTime: timestamp from the aprs packet
+    aprsTime: timestamp from the APRS packet
     userTime: timestamp from the user's system
     commmand: string sent to the telescope
     source: string for determining source of pos used

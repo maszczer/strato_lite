@@ -2,6 +2,7 @@
 Setup variables to be used globally throughout program
 """
 
+## HELPER FUNCTIONS ##
 ''' Return true if string is a numerical value '''
 def checkNum(strIn):
     try:
@@ -30,7 +31,7 @@ def setRefPos():
         lng = input("> Enter telescope longitude (deg)\n")
         alt = input("> Enter telescope altitude (m)\n")
         if checkNum(lat) and checkNum(lng) and checkNum(alt):
-            print("telescope coordinates : [" + lat + ", " + lng + ", " + alt + "]")
+            print("Telescope coordinates : [" + lat + ", " + lng + ", " + alt + "]")
             confirm = input("Is this correct?\n"
                             "Type 'yes' to confirm, anything else to re-enter\n")
             if confirm.lower() == "yes":
@@ -45,7 +46,7 @@ def setRefPos():
 def setTimer():
     timer = 0
     while True:
-        timer = input("> Enter time (sec) between each update (minimum time is 5 seconds)\n")
+        timer = setVar("Time (sec) between each update (minimum time is 5 seconds)")
         if checkNum(timer):
             timer = float(timer)
             if timer < 5:
@@ -105,7 +106,7 @@ offsetDEC = 0.00
 
 # Indicates if any data has been pulled
 # An error will occur when calling 'data' or 'status' before any data has been pulled
-printed = 0
+printed = False
 
 # socket for sending commands in tracking_ACTUAL
 TCP_IP = "Not set"

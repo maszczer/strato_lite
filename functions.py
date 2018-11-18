@@ -1,7 +1,7 @@
 """
 Functions shared by LITE files
 """
-import datetime, math
+import datetime, math, socket
 import numpy as np
 import pymap3d as pm
 import time, urllib.request
@@ -34,17 +34,18 @@ def getCoord():
     url = "https://api.aprs.fi/api/get?name=" + lite.callsign + \
           "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
     with urllib.request.urlopen(url) as f:
-        fak = f.readline()
+        text = f.readline()
         # This must be called twice
-        fak = f.readline()
-        if fak.find(b'<found>1'):
-            outline = fak.decode("utf-8")
-            outline = outline.replace("<"," ")
-            outline = outline.replace(">"," ")
+        text = f.readline()
+        if text.find(b'<found>1'):
+            outline = text.decode("utf-8")
+            outline = outline.replace("<"," ").replace(">"," ")
             line = outline.split()
 
-            lat = None; lng = None
-            alt = None; time = None
+            lat = None
+            lng = None
+            alt = None
+            time = None
 
             i = 0
             while i < len(line):
@@ -69,7 +70,7 @@ def getCoord():
 
 ''' Check if data from APRS has updated '''
 def checkUpdate(pos):
-# Return False if no update has occurred
+    # Return False if no update has occurred
     if lite.n > 0:
         if np.array_equal(pos, lite.log[lite.n - 1]["pos"]):
             return False
@@ -107,10 +108,11 @@ def repeat():
                                     lite.refPos[0], lite.refPos[1], lite.refPos[2])
     predHADEC = AZELtoHADEC([az, el, range])
 
-    # add in offset
+    # Add in offset
     predHADEC[0] += lite.offsetHA
     predHADEC[1] += lite.offsetDEC
 
+    # Print HA, DEC
     print("--------------------------------------------\n"
           "   HA: " + str(round(predHADEC[0], 4)) + " deg\n"
           "  DEC: " + str(round(predHADEC[1], 4)) + " deg")
@@ -120,7 +122,7 @@ def repeat():
     # String command sent to telescope
     strCmd = "#33," + str(predHADEC[0]) + "," + str(predHADEC[1]) + ";"
     time.sleep(1)
-    # minimum elevation for telescope movement is 16 deg
+    # Minimum elevation for telescope movement is 16 deg
     if lite.pause == 0 and el > 16:
         strCmd = ("#12;")
     data["command"] = strCmd
@@ -136,3 +138,34 @@ def repeat():
 
     lite.log.append(data)
     time.sleep(1)
+
+''' Specify mode to run in main() '''
+def setMode():
+    print("LITE has two modes for tracking")
+    while True:
+        mode = input("Run as 'TEST' or 'ACTUAL'?\n")
+
+        ## TEST ##
+        if mode.lower() == "test":
+            print("Running TEST ....\n")
+            break
+
+        ## ACTUAL ##
+        elif mode.lower() == "actual":
+            confirm = input("Telescope will begin moving\n"
+                            "Are you sure you want to begin running ACTUAL?\n")
+            if confirm.lower() == "yes":
+                ## TCP/IP ##
+                print("Connecting to telescope ....\n")
+                lite.TCP_IP = lite.setVar("IP address")
+                lite.TCP_PORT = float(lite.setVar("port number"))
+                lite.sock - socket.socket
+                lite.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                lite.sock.connect((lite.TCP_IP, lite.TCP_PORT))
+                print("Connection established ....\n")
+                lite.mode = "actual"
+                print("Running ACTUAL ....\n")
+                break
+
+        else:
+            print("Invalid mode\n")

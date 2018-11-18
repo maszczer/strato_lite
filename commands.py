@@ -6,7 +6,8 @@ import setup as lite
 
 ''' List available user commands '''
 def listCmds():
-    print("'d' or 'data' display most recent data\n"
+    print("-- HELP --\n"
+          "'d' or 'data' display most recent data\n"
           "'p' or 'pause' pause telescope movement (toggles on/off)\n"
           "'o' or 'offset' change offset to HA, DEC\n"
           "'r' or 'reset' orient telescope to default position\n"
@@ -15,7 +16,8 @@ def listCmds():
 
 ''' Print flight setup info '''
 def status():
-    print("APRS key: " + lite.aprsKey + "\n" +
+    print("-- STATUS --\n"
+          "APRS key: " + lite.aprsKey + "\n" +
           "Output mode: " + lite.mode + "\n" +
           "Update occurs every " + str(lite.timer + 2) + " sec" + "\n" +
           "Telescope coordinates : [" + str(lite.refPos[0]) + ", " +
@@ -31,7 +33,8 @@ def data():
         i = 0
         if lite.n > 0:
             i = lite.n - 1
-            print("Using " + lite.log[i]["source"] + " data:\n" +
+            print("-- DATA --\n"
+                  "Using " + lite.log[i]["source"] + " data:\n" +
                   "  LAT: " + str(lite.log[i]["pos"][0]) + " deg\n" +
                   "  LNG: " + str(lite.log[i]["pos"][1]) + " deg\n" +
                   "  ALT: " + str(lite.log[i]["pos"][2]) + " m\n" +
@@ -66,7 +69,8 @@ def data():
 
 ''' Change offset for HA, DEC '''
 def offset():
-    print(" HA offset = " + str(lite.offsetHA) +
+    print("-- OFFSET --\n"
+          " HA offset = " + str(lite.offsetHA) +
           "DEC offset = " + str(lite.offsetDEC))
     ha = input("> Enter new HA offset\n")
     dec = input("> Enter new DEC offset\n")
@@ -90,20 +94,22 @@ def offset():
 
 ''' Pause/resume telescope movement '''
 def pause():
+    print("-- PAUSE --\n")
     if not lite.pause:
         lite.pause = True
-        print("Telescope movement is paused")
+        print("Telescope movement is paused\n")
     else:
         lite.pause = False
         print("Resuming telescope movement ....\n")
 
 ''' End program '''
 def shutdown():
-    confirm = input("Are you sure you want to quit?\n"
-                "Type 'yes' to quit, anything else to cancel\n")
+    confirm = input("-- QUIT --\n"
+                    "Are you sure you want to quit?\n"
+                    "Type 'yes' to quit, anything else to cancel\n")
     if confirm.lower() == "yes":
         print("Quitting ....")
-        lite.live = 0
+        lite.live = False
         if lite.mode == "actual":
             lite.sock.close()
         exit(0)
@@ -112,8 +118,9 @@ def shutdown():
 
 ''' Send telescope to HA 3.66 and DEC -6.8 '''
 def reset():
-    confirm = input("Are you sure you want to reset orientation to the default position?\n"
-                "Type 'yes' to move, anything else to cancel\n")
+    confirm = input("-- RESET --\n"
+                    "Are you sure you want to reset orientation to the default position?\n"
+                    "Type 'yes' to move, anything else to cancel\n")
     if confirm.lower() == "yes":
         strCmd = ("#33,3.66,-6.8;")
         print(">> " + strCmd)

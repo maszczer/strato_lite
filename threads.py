@@ -29,7 +29,7 @@ def autoThread():
             "source"
         ])
 
-        while (lite.live == 1):
+        while lite.live:
             fcn.repeat()
             # Send new log[] data to .csv
             data = []
@@ -44,22 +44,22 @@ def autoThread():
             # Flush buffer, force write to .csv
             myfile.flush()
             lite.n += 1
-            lite.printed = 1
+            lite.printed = True
             time.sleep(lite.timer)
 
 ''' Handles mid-flight user commands '''
 def userThread():
+    options = {
+        "h": cmd.listCmds, "help": cmd.listCmds,
+        "s": cmd.status, "status": cmd.status,
+        "d": cmd.data, "data": cmd.data,
+        "o": cmd.offset, "offset": cmd.offset,
+        "p": cmd.pause, "pause": cmd.pause,
+        "q": cmd.shutdown, "quit": cmd.shutdown,
+        "r": cmd.reset, "reset": cmd.reset,
+    }
     while lite.live:
         command = input("Type 'h' or 'help' to list commands\n")
-        options = {
-            "h": cmd.listCmds, "help": cmd.listCmds,
-            "s": cmd.status, "status": cmd.status,
-            "d": cmd.data, "data": cmd.data,
-            "o": cmd.offset, "offset": cmd.offset,
-            "p": cmd.pause, "pause": cmd.pause,
-            "q": cmd.shutdown, "quit": cmd.shutdown,
-            "r": cmd.reset, "reset": cmd.reset,
-        }
         try:
             options[command]()
         except KeyError:

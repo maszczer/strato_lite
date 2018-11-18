@@ -1,61 +1,13 @@
-import socket, threading
-import setup as lite
+import threading
+import functions as fcn
 import threads
 
 def main():
     # Select a mode to run - TEST or ACTUAL
-    selected = 0
-    print("LITE has two modes for tracking")
-    while (selected == 0):
-        strIn = input("Run as 'TEST' or 'ACTUAL'?\n")
-        ## TEST ##
-        if (strIn.lower() == "test"):
-            selected = 1
-            print("Running TEST ....\n")
-
-        ## ACTUAL ##
-        elif (strIn.lower() == "actual"):
-            strIn = input("Telescope will begin moving\n"
-                          "Are you sure you want to begin ACTUAL?\n")
-            if (strIn.lower == "yes"):
-                ## TCP/IP ##
-                print("Connecting to telescope ....\n")
-                n = 0; strIn = "null"
-                while (n == 0):
-                    strIn = input("> Enter IP address")
-                    print("IP address : " + strIn)
-                    if (input("Is this correct?\n"
-                              "Type 'yes' to confirm, anything else to re-enter\n") == "yes"):
-                        n = 1
-                TCP_IP = strIn
-                lite.TCP_IP = TCP_IP
-
-                n = 0; strIn = "null"
-                while (n == 0):
-                    strIn = input("> Enter port number")
-                    print("Port number : " + strIn)
-                    if (input("Is this correct?\n"
-                              "Type 'yes' to confirm, anything else to re-enter\n") == "yes"):
-                        n = 1
-                TCP_PORT = strIn
-                lite.TCP_PORT = TCP_PORT
-                TCP_PORT = float(TCP_PORT)
-
-                lite.sock = socket.socket
-                lite.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                lite.sock.connect((TCP_IP, TCP_PORT))
-                print("Connection established ....\n")
-                lite.mode = "actual"; selected = 1
-                print("Running ACTUAL ....\n")
-
-            else:
-                print("Not running ACTUAL ....\n")
-
-        else:
-            print("Invalid mode\n")
-
-    autoThread = threading.Thread(target=threads.autoThread())
-    userThread = threading.Thread(target=threads.userThread())
+    fcn.setMode()
+    import setup as lite
+    autoThread = threading.Thread(target=threads.autoThread)
+    userThread = threading.Thread(target=threads.userThread)
     autoThread.start()
     userThread.start()
 

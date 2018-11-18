@@ -46,7 +46,6 @@ def getCoord():
             lng = None
             alt = None
             time = None
-
             i = 0
             while i < len(line):
                 if line[i] == 'time' and not time:
@@ -147,8 +146,10 @@ def setMode():
 
         ## TEST ##
         if mode.lower() == "test":
-            print("Running TEST ....\n")
-            break
+            confirm = input("Are you sure you want to begin running TEST?\n")
+            if confirm.lower() == "yes":
+                print("Running TEST ....\n")
+                break
 
         ## ACTUAL ##
         elif mode.lower() == "actual":
@@ -159,7 +160,7 @@ def setMode():
                 print("Connecting to telescope ....\n")
                 lite.TCP_IP = lite.setVar("IP address")
                 lite.TCP_PORT = float(lite.setVar("port number"))
-                lite.sock - socket.socket
+                lite.sock = socket.socket
                 lite.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 lite.sock.connect((lite.TCP_IP, lite.TCP_PORT))
                 print("Connection established ....\n")

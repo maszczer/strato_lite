@@ -3,9 +3,7 @@ import functions as fcn
 import threads
 
 def main():
-    # Select a mode to run - TEST or ACTUAL
     fcn.setMode()
-    import setup as lite
     autoThread = threading.Thread(target=threads.autoThread)
     userThread = threading.Thread(target=threads.userThread)
     autoThread.start()

@@ -101,14 +101,12 @@ noUpdate = 0
 n = 0
 
 # Manually added offset
-offsetHA = 0.00
-offsetDEC = 0.00
+offsetHA = offsetDEC = 0.00
 
 # Indicates if any data has been pulled
 # An error will occur when calling 'data' or 'status' before any data has been pulled
 printed = False
 
 # socket for sending commands in tracking_ACTUAL
-TCP_IP = "Not set"
-TCP_PORT = "Not set"
+TCP_IP = TCP_PORT = "Not set"
 sock = None

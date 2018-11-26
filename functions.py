@@ -42,10 +42,7 @@ def getCoord():
             outline = outline.replace("<"," ").replace(">"," ")
             line = outline.split()
 
-            lat = None
-            lng = None
-            alt = None
-            time = None
+            lat = lng = alt = time = None
             i = 0
             while i < len(line):
                 if line[i] == 'time' and not time:
@@ -65,6 +62,7 @@ def getCoord():
                     alt = float(line[i])
                 i += 1
 
+        # If callsign data not found
         if not (lat and lng and alt and time):
             lat = lng = alt = time = -404
     return [lat, lng, alt, time]
@@ -128,6 +126,7 @@ def repeat():
     data["command"] = strCmd
     print(">> " + strCmd + "\n")
 
+    # Data not up to date if callsign not found
     if lite.noUpdate == 0 and entry != [-404, -404, -404, -404]:
         print("Data is up to date")
     else:

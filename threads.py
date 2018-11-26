@@ -1,3 +1,6 @@
+"""
+Repeat these functions until the quit command is entered
+"""
 import csv, datetime, time
 import setup as lite
 import commands as cmd
@@ -33,8 +36,16 @@ def autoThread():
             fcn.repeat()
             # Send new log[] data to .csv
             data = []
-            logData = ["pos", "aprsTime", "userTime", "azel",
-                       "hadec", "predPos", "command", "source"]
+            logData = [
+                "pos",
+                "aprsTime",
+                "userTime",
+                "azel",
+                "hadec",
+                "predPos",
+                "command",
+                "source"
+            ]
             for datum in logData:
                 try:
                     data.extend(lite.log[lite.n][datum])

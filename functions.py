@@ -65,6 +65,8 @@ def getCoord():
                     alt = float(line[i])
                 i += 1
 
+        if not (lat and lng and alt and time):
+            lat = lng = alt = time = -404
     return [lat, lng, alt, time]
 
 ''' Check if data from APRS has updated '''
@@ -110,7 +112,6 @@ def repeat():
     # Add in offset
     predHADEC[0] += lite.offsetHA
     predHADEC[1] += lite.offsetDEC
-
     # Print HA, DEC
     print("--------------------------------------------\n"
           "   HA: " + str(round(predHADEC[0], 4)) + " deg\n"
@@ -118,19 +119,20 @@ def repeat():
     data["azel"] = [az, el, range]
     data["hadec"] = predHADEC
 
-    # String command sent to telescope
-    strCmd = "#33," + str(predHADEC[0]) + "," + str(predHADEC[1]) + ";"
     time.sleep(1)
+    # String command sent to telescope
+    strCmd = "#12;"
     # Minimum elevation for telescope movement is 16 deg
-    if lite.pause == 0 and el > 16:
-        strCmd = ("#12;")
+    if el >= 16 and not lite.pause and predHADEC != [-1, -1]:
+        strCmd = "#33," + str(predHADEC[0]) + "," + str(predHADEC[1]) + ";"
     data["command"] = strCmd
     print(">> " + strCmd + "\n")
 
-    if lite.noUpdate == 0:
+    if lite.noUpdate == 0 and entry != [-404, -404, -404, -404]:
         print("Data is up to date")
     else:
-        print("Calls since last update: " + str(lite.noUpdate) + "\n")
+        print("Data is not up to date\n"
+              "Calls since last update: " + str(lite.noUpdate) + "\n")
 
     if lite.mode == "actual":
         lite.sock.send(bytes(strCmd, 'utf-8'))
@@ -146,7 +148,8 @@ def setMode():
 
         ## TEST ##
         if mode.lower() == "test":
-            confirm = input("Are you sure you want to begin running TEST?\n")
+            confirm = input("Are you sure you want to begin running TEST?\n"
+                            "Type 'yes' to confirm, anything else to re-enter\n")
             if confirm.lower() == "yes":
                 print("Running TEST ....\n")
                 break
@@ -154,12 +157,13 @@ def setMode():
         ## ACTUAL ##
         elif mode.lower() == "actual":
             confirm = input("Telescope will begin moving\n"
-                            "Are you sure you want to begin running ACTUAL?\n")
+                            "Are you sure you want to begin running ACTUAL?\n"
+                            "Type 'yes' to confirm, anything else to re-enter\n")
             if confirm.lower() == "yes":
                 ## TCP/IP ##
                 print("Connecting to telescope ....\n")
                 lite.TCP_IP = lite.setVar("IP address")
-                lite.TCP_PORT = float(lite.setVar("port number"))
+                lite.TCP_PORT = int(lite.setVar("port number"))
                 lite.sock = socket.socket
                 lite.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 lite.sock.connect((lite.TCP_IP, lite.TCP_PORT))

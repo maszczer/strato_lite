@@ -23,7 +23,7 @@ def status():
           "Telescope coordinates : [" + str(lite.refPos[0]) + ", " +
           str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]\n"
           "TCP_IP: " + lite.TCP_IP + "\n" +
-          "TCP_PORT: " + lite.TCP_PORT + "\n" +
+          "TCP_PORT: " + str(lite.TCP_PORT) + "\n" +
           "Program has been running for " +
           str(round(lite.n * (lite.timer + 2) / 60, 4)) + " min")  # buggy
 

@@ -5,9 +5,10 @@ import threads
 def main():
     fcn.setMode()
     autoThread = threading.Thread(target=threads.autoThread)
-    userThread = threading.Thread(target=threads.userThread)
+    #userThread = threading.Thread(target=threads.userThread)
     autoThread.start()
-    userThread.start()
+    #userThread.start()
+    threads.userThread()
 
 if (__name__ == "__main__"):
     main()

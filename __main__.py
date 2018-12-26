@@ -6,6 +6,8 @@ def main():
     fcn.setMode()
     autoThread = threading.Thread(target=threads.autoThread)
     autoThread.start()
+    grndThread = threading.Thread(target=threads.grndThread)
+    grndThread.start()
     threads.userThread()
 
 if (__name__ == "__main__"):
@@ -23,9 +25,19 @@ TODO
 [ ] Opt to pull from either GroundStation or APRS, else predicted values
  * Will GroundStation feed dupliacte values if we don't read data? <-- do this
 [ ] Write function to determine if getting new data from GroundStation or APRS
+[ ] predPos logs prediction for 30 sec into future
+[ ] Write test script for predict.py
+[ ] Change timer b/c groundstation pulls every 10s, APRS will be every 20s
+    Hard code timer to 10s
 
 NOTE
  * If GPS data is pulled instead of APRS.fi, make sure format is compatible
  * Predicted location is only valid for 1st instance after losing APRS (currently)
- * Predictor will handle offset
+ * Predictor will handle automated offset
+ * Pos[] data will be determined using descending priority as follows:
+    grndPos[]   --> predict(grndPos[])
+    aprsPos[]   --> predict(aprsPos[])
+    predPos[]   --> predict(predPos[])
+    else            #12;
+   Use if/elif blocks
 '''

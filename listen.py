@@ -1,4 +1,5 @@
 """
+For local testing purposes
 Opens a socket that listens for TCP packets
 IP Address = localhost
     Port # = 6000

@@ -19,13 +19,12 @@ def status():
     print("-- STATUS --\n"
           "APRS key: " + lite.aprsKey + "\n" +
           "Output mode: " + lite.mode + "\n" +
-          "Update occurs every " + str(lite.timer + 2) + " sec" + "\n" +
           "Telescope coordinates : [" + str(lite.refPos[0]) + ", " +
           str(lite.refPos[1]) + ", " + str(lite.refPos[2]) + "]\n"
           "TCP_IP: " + lite.TCP_IP + "\n" +
           "TCP_PORT: " + str(lite.TCP_PORT) + "\n" +
           "Program has been running for " +
-          str(round(lite.n * (lite.timer + 2) / 60, 4)) + " min")  # buggy
+          str(round(lite.n * 10 / 60, 4)) + " min")  # buggy
 
 ''' Print most recent data, more detailed than standard output '''
 def data():

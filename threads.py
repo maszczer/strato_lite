@@ -1,7 +1,7 @@
 """
 Repeat these functions until the quit command is entered
 """
-import csv, datetime, time
+import csv, datetime, socket, time
 import setup as lite
 import commands as cmd
 import functions as fcn
@@ -56,7 +56,7 @@ def autoThread():
             myfile.flush()
             lite.n += 1
             lite.printed = True
-            time.sleep(lite.timer)
+            time.sleep(10)
 
 ''' Handles mid-flight user commands '''
 def userThread():
@@ -75,3 +75,16 @@ def userThread():
             options[command]()
         except KeyError:
             print("Invalid command\n")
+
+''' Listens for TCP packets from Ground Station on port 6000 '''
+def grndThread():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(("localhost", 6000))
+    sock.listen(5)
+    client_sock = sock.accept()[0]
+    while lite.live:
+        data = client_sock.recv(1024)
+        if bool(data):
+            data = data.decode('utf-8')
+            # TODO: Record data from Ground Station packets
+            print(data)

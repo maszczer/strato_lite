@@ -30,7 +30,7 @@ def AZELtoHADEC(AZEL):
     return [ha, dec]
 
 ''' Get latitude, longitude, altitude, and time from APRS '''
-def getCoord():
+def getAprsPos():
     url = "https://api.aprs.fi/api/get?name=" + lite.callsign + \
           "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
     with urllib.request.urlopen(url) as f:
@@ -82,7 +82,7 @@ def checkUpdate(pos):
 def repeat():
     data = {}
     # Get current position
-    entry = getCoord()
+    entry = getAprsPos()
     data["pos"] = entry[0:3]
     data["aprsTime"] = entry[3]
     data["userTime"] = datetime.datetime.now()

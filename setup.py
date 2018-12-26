@@ -42,22 +42,6 @@ def setRefPos():
 
     return refPos
 
-''' Set time between calls to APRS '''
-def setTimer():
-    timer = 0
-    while True:
-        timer = setVar("Time (sec) between each update (minimum time is 5 seconds)")
-        if checkNum(timer):
-            timer = float(timer)
-            if timer < 5:
-                print("Interval is too short\n")
-            else:
-                timer -= 2
-                break
-        else:
-            print("Input must be a number\n")
-
-    return timer
 
 
 ## GLOBAL VARIABLES ##
@@ -75,17 +59,16 @@ refPos = setRefPos()
 # Callsign to track
 callsign = setVar("callsign")
 
-# Time between calls to APRS
-timer = setTimer()
-
 '''
 log is a list containing data stored throughout the flight
 ----------------------------------------------------------
 Each instance in the list will store a dictionary
 containing the following elements:
-    pos[]: stores [latitude, longitude, altitude]
+    pos[]: stores [latitude, longitude, altitude] sent to telescope
     azel[]: stores [azimuth, elevation, range]
     hadec[]: stores [hourAngle, declination]
+    grndPos[]: stores [latitude, longitude, altitude] from Ground Station
+    aprsPos[]: stores [latitude, longitude, altitude] from APRS.fi
     predPos[]: stores predicted [latitude, longitude, altitude]
     aprsTime: timestamp from the APRS packet
     userTime: timestamp from the user's system

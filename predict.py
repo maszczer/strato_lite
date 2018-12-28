@@ -93,4 +93,4 @@ def predict(pos):
             ## MAKE ALL CHANGES ABOVE ##
         except IndexError:
             pass
-    return [(predLat), (predLng), (predAlt)]
+    return [predLat, predLng, predAlt]

@@ -2,6 +2,7 @@
 Functions for each user command
 These are called by userThread() in threads.py
 """
+import queue
 import setup as lite
 
 ''' List available user commands '''
@@ -26,6 +27,13 @@ def status():
           "Program has been running for " +
           str(round(lite.n * 10 / 60, 4)) + " min")  # buggy
 
+''' Returns string for printing latitude, longitude, altitude '''
+def printPos(pos):
+    data = "  LAT: " + str(pos[0]) + " deg\n" + \
+          "  LNG: " + str(pos[1]) + " deg\n" + \
+          "  ALT: " + str(pos[2]) + " m\n"
+    return data
+
 ''' Print most recent data, more detailed than standard output '''
 def data():
     if lite.printed:
@@ -34,29 +42,23 @@ def data():
             i = lite.n - 1
             print("-- DATA --\n"
                   "Using " + lite.log[i]["source"] + " data:\n" +
-                  "  LAT: " + str(lite.log[i]["pos"][0]) + " deg\n" +
-                  "  LNG: " + str(lite.log[i]["pos"][1]) + " deg\n" +
-                  "  ALT: " + str(lite.log[i]["pos"][2]) + " m\n" +
+                  printPos(lite.log[i]["pos"]) +
                   " TIME: " + str(lite.log[i]["aprsTime"]) + "\n" +
-                  "   AZ: " + str(lite.log[i]["azel"][0]) + " deg\n" +
-                  "   EL: " + str(lite.log[i]["azel"][1]) + " deg\n" +
-                  "RANGE: " + str(lite.log[i]["azel"][2]) + " m\n" +
+                  printPos(lite.log[i]["azel"]) +
                   "   HA: " + str(lite.log[i]["hadec"][0]) + " deg" +
                   " w/ offset " + str(lite.offsetHA) + "\n"
                   "  DEC: " + str(lite.log[i]["hadec"][1]) + " deg" +
                   " w/ offset " + str(lite.offsetDEC) + "\n" +
-                  "Predicted:\n" +
-                  "  LAT: " + str(lite.log[i]["predPos"][0]) + " deg\n" +
-                  "  LNG: " + str(lite.log[i]["predPos"][1]) + " deg\n" +
-                  "  ALT: " + str(lite.log[i]["predPos"][2]) + " m\n" +
+                  "Predicted:\n" + printPos(lite.log[i]["predPos"]) +
                   ">> " + lite.log[i]["command"])
 
+        # TODO: Edit update check to account for Grounds Station & APRS
         if lite.noUpdate == 0:
             print("Data is up to date")
         else:
             print("Calls since last update: " + str(lite.noUpdate))
 
-        print(str(lite.log[i]["userTime"]))
+        print(str(lite.log[i]["isotime"]))
 
         if lite.pause:
             print("Telescope movement is paused\n")
@@ -83,13 +85,16 @@ def offset():
         if confirm.lower() == "yes":
             lite.offsetHA = newHA
             lite.offsetDEC = newDEC
-            print("Offset changed to (" + str(lite.offsetHA) + ", " + str(lite.offsetDEC) + ")\n")
+            print("Offset changed to (" + str(lite.offsetHA) +
+                  ", " + str(lite.offsetDEC) + ")\n")
         else:
-            print("Offset unchanged, still (" + str(lite.offsetHA) + ", " + str(lite.offsetDEC) + ")\n")
+            print("Offset unchanged, still (" + str(lite.offsetHA) +
+                  ", " + str(lite.offsetDEC) + ")\n")
 
     else:
         print("HA & DEC must be numbers\n"
-              "Offset unchanged, still (" + str(lite.offsetHA) + ", " + str(lite.offsetDEC) + ")\n")
+              "Offset unchanged, still (" + str(lite.offsetHA) + ", " +
+              str(lite.offsetDEC) + ")\n")
 
 ''' Pause/resume telescope movement '''
 def pause():

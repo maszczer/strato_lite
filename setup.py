@@ -1,6 +1,7 @@
 """
 Setup variables to be used globally throughout program
 """
+import queue
 
 ## HELPER FUNCTIONS ##
 ''' Return true if string is a numerical value '''
@@ -42,7 +43,12 @@ def setRefPos():
 
     return refPos
 
-
+''' Initializes Queue for predicted positions '''
+def initPredQueue():
+    predQueue = queue.Queue()
+    for i in range(3):
+        predQueue.put([-404, -404, -404])
+    return predQueue
 
 ## GLOBAL VARIABLES ##
 mode = "test"
@@ -70,20 +76,26 @@ containing the following elements:
     grndPos[]: stores [latitude, longitude, altitude] from Ground Station
     aprsPos[]: stores [latitude, longitude, altitude] from APRS.fi
     predPos[]: stores predicted [latitude, longitude, altitude]
-    aprsTime: timestamp from the APRS packet
-    userTime: timestamp from the user's system
+    utime: timestamp from the APRS packet
+    isotime: timestamp from the user's system
     commmand: string sent to the telescope
     source: string for determining source of pos used
 '''
 log = []
 
-# number of iterations since last APRS update
+# Latest position data stored from Ground Station
+grndPos = [-404, -404, -404, -404]
+
+# Queue for storing predPos for 30 sec ahead
+predQueue = initPredQueue()
+
+# N iterations since last APRS update
 noUpdate = 0
 
 # Current iteration
 n = 0
 
-# Manually added offset
+# Manually addeded offset
 offsetHA = offsetDEC = 0.00
 
 # Indicates if any data has been pulled

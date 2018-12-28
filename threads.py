@@ -84,7 +84,5 @@ def grndThread():
     client_sock = sock.accept()[0]
     while lite.live:
         data = client_sock.recv(1024)
-        if bool(data):
-            data = data.decode('utf-8')
-            # TODO: Record data from Ground Station packets
-            print(data)
+        lite.grndPos = fcn.getGrndPos(data)
+        time.sleep(10)

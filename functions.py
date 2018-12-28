@@ -1,7 +1,7 @@
 """
 Functions shared by LITE files
 """
-import datetime, math, socket
+import datetime, math, socket, queue
 import numpy as np
 import pymap3d as pm
 import time, urllib.request
@@ -29,7 +29,23 @@ def AZELtoHADEC(AZEL):
 
     return [ha, dec]
 
-''' Get latitude, longitude, altitude, and time from APRS '''
+''' Get latitude, longitude, altitude, and utime from Ground Station '''
+def getGrndPos(data):
+    lat = lng = alt = utime = -404
+    if bool(data):
+        data.decode('utf-8')
+        #print(data)
+        data = data.split(',')
+        try:
+            lat = float(data[10])
+            lng = float(data[11])
+            alt = float(data[14])
+            utime = float(data[1])
+        except:
+            lat = lng = alt = utime = -404
+    return [lat, lng, alt, utime]
+
+''' Get latitude, longitude, altitude, and utime from APRS '''
 def getAprsPos():
     url = "https://api.aprs.fi/api/get?name=" + lite.callsign + \
           "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
@@ -42,12 +58,12 @@ def getAprsPos():
             outline = outline.replace("<"," ").replace(">"," ")
             line = outline.split()
 
-            lat = lng = alt = time = None
+            lat = lng = alt = utime = None
             i = 0
             while i < len(line):
-                if line[i] == 'time' and not time:
+                if line[i] == 'time' and not utime:
                     i += 1
-                    time = float(line[i])
+                    utime = float(line[i])
 
                 elif line[i] == 'lat' and not lat:
                     i += 1
@@ -63,15 +79,29 @@ def getAprsPos():
                 i += 1
 
         # If callsign data not found
-        if not (lat and lng and alt and time):
-            lat = lng = alt = time = -404
-    return [lat, lng, alt, time]
+        if not (lat and lng and alt and utime):
+            lat = lng = alt = utime = -404
+    return [lat, lng, alt, utime]
+
+''' Check if data from Ground Station has updated '''
+def checkGrndUpdate():
+    # Return False if no update has occurred
+    if lite.grndPos[0:3] == [-404, -404, -404]:
+        return False
+    elif lite.n > 0:
+        if np.array_equal(lite.grndPos[0:3], lite.log[lite.n - 1]["pos"]):
+            return False
+        else:
+            return True
+    else:
+        return True
 
 ''' Check if data from APRS has updated '''
 def checkUpdate(pos):
-    # Return False if no update has occurred
-    if lite.n > 0:
-        if np.array_equal(pos, lite.log[lite.n - 1]["pos"]):
+    if pos[0:3] == [-404, -404, -404]:
+        return False
+    elif lite.n > 0:
+        if np.array_equal(pos, lite.log[lite.n- 1]["pos"]):
             return False
         else:
             return True
@@ -82,14 +112,21 @@ def checkUpdate(pos):
 def repeat():
     data = {}
     # Get current position
-    entry = getAprsPos()
+    # TODO: Fix this
+    entry = lite.grndPos
+    if not checkUpdate(lite.grndPos):
+        if not checkUpdate()
+        entry = getAprsPos()
     data["pos"] = entry[0:3]
-    data["aprsTime"] = entry[3]
-    data["userTime"] = datetime.datetime.now()
+    data["utime"] = entry[3]
+    data["isotime"] = datetime.datetime.now()
     balloonPos = [entry[0], entry[1], entry[2]]
 
+    # Store new predicted position
+    lite.predQueue.put(predict.predict(balloonPos))
+
     # Get predicted position
-    predPos = predict.predict(balloonPos)
+    predPos = lite.predQueue.get()
     data["predPos"] = predPos
     source = "aprs"
 

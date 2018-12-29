@@ -30,8 +30,8 @@ def status():
 ''' Returns string for printing latitude, longitude, altitude '''
 def printPos(pos):
     data = "  LAT: " + str(pos[0]) + " deg\n" + \
-          "  LNG: " + str(pos[1]) + " deg\n" + \
-          "  ALT: " + str(pos[2]) + " m\n"
+           "  LNG: " + str(pos[1]) + " deg\n" + \
+           "  ALT: " + str(pos[2]) + " m\n"
     return data
 
 ''' Print most recent data, more detailed than standard output '''
@@ -52,11 +52,15 @@ def data():
                   "Predicted:\n" + printPos(lite.log[i]["predPos"]) +
                   ">> " + lite.log[i]["command"])
 
-        # TODO: Edit update check to account for Grounds Station & APRS
-        if lite.noUpdate == 0:
-            print("Data is up to date")
+        if lite.lastGrndUpdate == 0:
+            print("Ground Station data is up to date")
         else:
-            print("Calls since last update: " + str(lite.noUpdate))
+            print("Calls since last Ground Station update: " + str(lite.lastGrndUpdate))
+
+        if lite.lastAprsUpdate == 0:
+            print("APRS data is up to date")
+        else:
+            print("Calls since last APRS update: " + str(lite.lastAprsUpdate))
 
         print(str(lite.log[i]["isotime"]))
 

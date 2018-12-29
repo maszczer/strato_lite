@@ -22,12 +22,12 @@ TODO
 [x] Update recurring print for time, aprs data, predicted HA, DEC, any offset, time since last APRS update, etc
 [x] Implement data 'd' to print more detailed info for most recent data
 [ ] Print error from previous data
-[ ] Opt to pull from either GroundStation or APRS, else predicted values
+[x] Opt to pull from either GroundStation or APRS, else predicted values
  * Will GroundStation feed dupliacte values if we don't read data? <-- do this
-[ ] Write function to determine if getting new data from GroundStation or APRS
-[ ] predPos logs prediction for 30 sec into future
+[x] Write function to determine if getting new data from GroundStation or APRS
+[x] predPos logs prediction for 30 sec into future
 [ ] Write test script for predict.py
-[ ] Change timer b/c groundstation pulls every 10s, APRS will be every 20s
+[x] Change timer b/c groundstation pulls every 10s, APRS will be every 20s
     Hard code timer to 10s
 
 NOTE

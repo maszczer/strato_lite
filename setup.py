@@ -47,7 +47,7 @@ def setRefPos():
 def initPredQueue():
     predQueue = queue.Queue()
     for i in range(3):
-        predQueue.put([-404, -404, -404])
+        predQueue.put([-404, -404, -404, -404])
     return predQueue
 
 ## GLOBAL VARIABLES ##
@@ -76,7 +76,7 @@ containing the following elements:
     grndPos[]: stores [latitude, longitude, altitude] from Ground Station
     aprsPos[]: stores [latitude, longitude, altitude] from APRS.fi
     predPos[]: stores predicted [latitude, longitude, altitude]
-    utime: timestamp from the APRS packet
+    utime: timestamp from Ground Station or APRS packets
     isotime: timestamp from the user's system
     commmand: string sent to the telescope
     source: string for determining source of pos used
@@ -90,7 +90,9 @@ grndPos = [-404, -404, -404, -404]
 predQueue = initPredQueue()
 
 # N iterations since last APRS update
-noUpdate = 0
+#noUpdate = 0
+lastGrndUpdate = 0
+lastAprsUpdate = 0
 
 # Current iteration
 n = 0

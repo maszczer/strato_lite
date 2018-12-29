@@ -18,13 +18,19 @@ def autoThread():
             "lat (deg)",
             "lng (deg)",
             "alt (m)",
-            "APRS timestamp",
-            "user timestamp",
             "az (deg)",
             "el (deg)",
             "range (m)",
             "ha (deg)",
             "dec (deg)",
+            "utime",
+            "isotime",
+            "grndLat (deg)",
+            "grndLng (deg)",
+            "grndAlt (m)",
+            "aprsLat (deg)",
+            "aprsLng (deg)",
+            "aprsAlt (m)",
             "predLat (deg)",
             "predLng (deg)",
             "predAlt (m)",
@@ -38,10 +44,12 @@ def autoThread():
             data = []
             logData = [
                 "pos",
-                "aprsTime",
-                "userTime",
                 "azel",
                 "hadec",
+                "utime",
+                "isotime",
+                "grndPos",
+                "aprsPos",
                 "predPos",
                 "command",
                 "source"
@@ -56,7 +64,8 @@ def autoThread():
             myfile.flush()
             lite.n += 1
             lite.printed = True
-            time.sleep(10)
+            # Sleep for 8 sec, since 2 sec buffer in repeat()
+            time.sleep(8)
 
 ''' Handles mid-flight user commands '''
 def userThread():

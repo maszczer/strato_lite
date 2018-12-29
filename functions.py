@@ -40,9 +40,12 @@ def getGrndPos(data):
             lat = float(data[10])
             lng = float(data[11])
             alt = float(data[14])
+        except:
+            lat = lng = alt = -404
+        try:
             utime = float(data[1])
         except:
-            lat = lng = alt = utime = -404
+            utime = -404
     return [lat, lng, alt, utime]
 
 ''' Get latitude, longitude, altitude, and utime from APRS '''
@@ -83,61 +86,55 @@ def getAprsPos():
             lat = lng = alt = utime = -404
     return [lat, lng, alt, utime]
 
-''' Check if data from Ground Station has updated '''
-def checkGrndUpdate():
-    # Return False if no update has occurred
-    if lite.grndPos[0:3] == [-404, -404, -404]:
-        return False
-    elif lite.n > 0:
-        if np.array_equal(lite.grndPos[0:3], lite.log[lite.n - 1]["pos"]):
-            return False
-        else:
-            return True
-    else:
-        return True
-
-''' Check if data from APRS has updated '''
-def checkUpdate(pos):
+''' Check if data from Ground Station or APRS has updated '''
+def checkUpdate(pos, logdata):
     if pos[0:3] == [-404, -404, -404]:
         return False
     elif lite.n > 0:
-        if np.array_equal(pos, lite.log[lite.n- 1]["pos"]):
+        if np.array_equal(pos, logdata):
             return False
         else:
             return True
     else:
         return True
 
-''' Pull data from APRS & perform calculations '''
+''' Pull data from Ground Station and APRS & perform calculations '''
 def repeat():
-    data = {}
-    # Get current position
-    # TODO: Fix this
-    entry = lite.grndPos
-    if not checkUpdate(lite.grndPos):
-        if not checkUpdate()
-        entry = getAprsPos()
-    data["pos"] = entry[0:3]
-    data["utime"] = entry[3]
+    data = {"source": "grnd"}
+    balloonPos = [-404, -404, -404]
+    aprsPos = getAprsPos()
+    predPos = lite.predQueue.get()
+
+    data["grndPos"] = lite.grndPos
+    data["aprsPos"] = aprsPos
+    data["predPos"] = predPos
+
+    # Try to get data from Ground Station
+    if checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
+        lite.lastGrndUpdate = 0
+        if not checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
+            lite.lastAprsUpdate += 1
+        else:
+            lite.lastAprsUpdate = 0
+        balloonPos = lite.grndPos
+    # Else, try to get data from APRS
+    elif checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
+        lite.lastGrndUpdate += 1
+        lite.lastAprsUpdate = 0
+        balloonPos = aprsPos
+        data["source"] = "aprs"
+    # Else, get data from predicted value
+    else:
+        lite.lastGrndUpdate += 1
+        lite.lastAprsUpdate += 1
+        balloonPos = predPos
+        data["source"] = "pred"
+    data["pos"] = balloonPos[0:3]
+    data["utime"] = balloonPos[3]
     data["isotime"] = datetime.datetime.now()
-    balloonPos = [entry[0], entry[1], entry[2]]
 
     # Store new predicted position
-    lite.predQueue.put(predict.predict(balloonPos))
-
-    # Get predicted position
-    predPos = lite.predQueue.get()
-    data["predPos"] = predPos
-    source = "aprs"
-
-    # Check if update has occured
-    if len(lite.log) > 1:
-        if not checkUpdate(entry[0:3]):
-            source = "pred"
-            lite.noUpdate += 1
-        else:
-            lite.noUpdate = 0
-    data["source"] = source
+    lite.predQueue.put(predict.predict(balloonPos[0:3]))
 
     # Coordinate conversions
     az, el, range = pm.geodetic2aer(predPos[0], predPos[1], predPos[2],
@@ -158,17 +155,23 @@ def repeat():
     # String command sent to telescope
     strCmd = "#12;"
     # Minimum elevation for telescope movement is 16 deg
-    if el >= 16 and not lite.pause and predHADEC != [-1, -1]:
+    if el >= 16 and not lite.pause and balloonPos != [-404, -404, -404, -404]:
         strCmd = "#33," + str(predHADEC[0]) + "," + str(predHADEC[1]) + ";"
     data["command"] = strCmd
     print(">> " + strCmd + "\n")
 
     # Data not up to date if callsign not found
-    if lite.noUpdate == 0 and entry != [-404, -404, -404, -404]:
-        print("Data is up to date")
+    if lite.lastGrndUpdate == 0 and balloonPos != [-404, -404, -404, -404]:
+        print("Ground Station data is up to date")
     else:
-        print("Data is not up to date\n"
-              "Calls since last update: " + str(lite.noUpdate) + "\n")
+        print("Ground Station data is not up to date\n"
+              "Calls since last Ground Station update: " + str(lite.lastGrndUpdate) + "\n")
+
+    if lite.lastAprsUpdate == 0 and balloonPos != [-404, -404, -404, -404]:
+        print("APRS data is up to date")
+    else:
+        print("APRS data is not up to date\n"
+              "Calls since last APRS update: " + str(lite.lastAprsUpdate) + "\n")
 
     if lite.mode == "actual":
         lite.sock.send(bytes(strCmd, 'utf-8'))

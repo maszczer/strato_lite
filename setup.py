@@ -90,9 +90,7 @@ grndPos = [-404, -404, -404, -404]
 predQueue = initPredQueue()
 
 # N iterations since last APRS update
-#noUpdate = 0
-lastGrndUpdate = 0
-lastAprsUpdate = 0
+lastGrndUpdate = lastAprsUpdate = 0
 
 # Current iteration
 n = 0

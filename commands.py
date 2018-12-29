@@ -36,21 +36,19 @@ def printPos(pos):
 
 ''' Print most recent data, more detailed than standard output '''
 def data():
-    if lite.printed:
-        i = 0
-        if lite.n > 0:
-            i = lite.n - 1
-            print("-- DATA --\n"
-                  "Using " + lite.log[i]["source"] + " data:\n" +
-                  printPos(lite.log[i]["pos"]) +
-                  " TIME: " + str(lite.log[i]["aprsTime"]) + "\n" +
-                  printPos(lite.log[i]["azel"]) +
-                  "   HA: " + str(lite.log[i]["hadec"][0]) + " deg" +
-                  " w/ offset " + str(lite.offsetHA) + "\n"
-                  "  DEC: " + str(lite.log[i]["hadec"][1]) + " deg" +
-                  " w/ offset " + str(lite.offsetDEC) + "\n" +
-                  "Predicted:\n" + printPos(lite.log[i]["predPos"]) +
-                  ">> " + lite.log[i]["command"])
+    if lite.printed and lite.n > 0:
+        i = lite.n - 1
+        print("-- DATA --\n"
+              "Using " + lite.log[i]["source"] + " data:\n" +
+              printPos(lite.log[i]["pos"]) +
+              " TIME: " + str(lite.log[i]["aprsTime"]) + "\n" +
+              printPos(lite.log[i]["azel"]) +
+              "   HA: " + str(lite.log[i]["hadec"][0]) + " deg" +
+              " w/ offset " + str(lite.offsetHA) + "\n"
+              "  DEC: " + str(lite.log[i]["hadec"][1]) + " deg" +
+              " w/ offset " + str(lite.offsetDEC) + "\n" +
+              "Predicted:\n" + printPos(lite.log[i]["predPos"]) +
+              ">> " + lite.log[i]["command"])
 
         if lite.lastGrndUpdate == 0:
             print("Ground Station data is up to date")

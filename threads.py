@@ -55,10 +55,14 @@ def autoThread():
                 "source"
             ]
             for datum in logData:
-                try:
-                    data.extend(lite.log[lite.n][datum])
-                except TypeError:
+                # Ensure string values are not extended as char arrays
+                if datum == "command" or datum == "source":
                     data.append(lite.log[lite.n][datum])
+                else:
+                    try:
+                        data.extend(lite.log[lite.n][datum])
+                    except TypeError:
+                        data.append(lite.log[lite.n][datum])
             writer.writerow(data)
             # Flush buffer, force write to .csv
             myfile.flush()
@@ -95,3 +99,4 @@ def grndThread():
         data = client_sock.recv(1024)
         lite.grndPos = fcn.getGrndPos(data)
         time.sleep(10)
+    sock.close()

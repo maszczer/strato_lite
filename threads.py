@@ -71,7 +71,6 @@ def autoThread():
             # Sleep for 8 sec, since 2 sec buffer in repeat()
             time.sleep(8)
         myfile.close()
-        print("autoThread terminated")
 
 ''' Handles mid-flight user commands '''
 def userThread():
@@ -90,7 +89,6 @@ def userThread():
             options[command]()
         except KeyError:
             print("Invalid command\n")
-    print("userThread terminated")
 
 ''' Listens for TCP packets from Ground Station on port 6000 '''
 def grndThread():
@@ -107,4 +105,3 @@ def grndThread():
             data = [-404] * 15
         lite.grndPos = fcn.getGrndPos(data)
         time.sleep(10)
-    print("grndThread terminated")

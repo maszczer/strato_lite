@@ -5,6 +5,7 @@ import threads
 def main():
     fcn.setMode()
     grndThread = threading.Thread(target=threads.grndThread)
+    grndThread.daemon = True
     grndThread.start()
     autoThread = threading.Thread(target=threads.autoThread)
     autoThread.start()

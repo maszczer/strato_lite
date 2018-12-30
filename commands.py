@@ -41,7 +41,7 @@ def data():
         print("-- DATA --\n"
               "Using " + lite.log[i]["source"] + " data:\n" +
               printPos(lite.log[i]["pos"]) +
-              " TIME: " + str(lite.log[i]["aprsTime"]) + "\n" +
+              " TIME: " + str(lite.log[i]["utime"]) + "\n" +
               printPos(lite.log[i]["azel"]) +
               "   HA: " + str(lite.log[i]["hadec"][0]) + " deg" +
               " w/ offset " + str(lite.offsetHA) + "\n"
@@ -66,6 +66,7 @@ def data():
             print("Telescope movement is paused\n")
         else:
             print("Telescope movement is active\n")
+        #'''
 
     else:
         print("Loading data, please wait and try again\n")
@@ -115,10 +116,9 @@ def shutdown():
                     "Type 'yes' to quit, anything else to cancel\n")
     if confirm.lower() == "yes":
         print("Quitting ....")
-        lite.live = False
         if lite.mode == "actual":
             lite.sock.close()
-        exit(0)
+        lite.live = False
     else:
         print("Resuming tracking ....\n")
 

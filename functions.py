@@ -31,21 +31,10 @@ def AZELtoHADEC(AZEL):
 
 ''' Get latitude, longitude, altitude, and utime from Ground Station '''
 def getGrndPos(data):
-    lat = lng = alt = utime = -404
-    if bool(data):
-        data.decode('utf-8')
-        #print(data)
-        data = data.split(',')
-        try:
-            lat = float(data[10])
-            lng = float(data[11])
-            alt = float(data[14])
-        except:
-            lat = lng = alt = -404
-        try:
-            utime = float(data[1])
-        except:
-            utime = -404
+    lat = float(data[10])
+    lng = float(data[11])
+    alt = float(data[14])
+    utime = float(data[1])
     return [lat, lng, alt, utime]
 
 ''' Get latitude, longitude, altitude, and utime from APRS '''
@@ -101,33 +90,39 @@ def checkUpdate(pos, logdata):
 ''' Pull data from Ground Station and APRS & perform calculations '''
 def repeat():
     data = {"source": "grnd"}
-    balloonPos = [-404, -404, -404]
-    aprsPos = getAprsPos()
+    # APRS calls are made every 30 sec
+    if lite.n % 3 == 0:
+        aprsPos = getAprsPos()
+    else:
+        aprsPos = lite.log[lite.n - 1]["aprsPos"]
     predPos = lite.predQueue.get()
-
-    data["grndPos"] = lite.grndPos
-    data["aprsPos"] = aprsPos
-    data["predPos"] = predPos
+    balloonPos = lite.grndPos
+    data["grndPos"] = lite.grndPos[0:3]
+    data["aprsPos"] = aprsPos[0:3]
+    data["predPos"] = predPos[0:3]
 
     # Try to get data from Ground Station
-    if checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
+    if lite.n > 1 and checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
         lite.lastGrndUpdate = 0
-        if not checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
-            lite.lastAprsUpdate += 1
-        else:
-            lite.lastAprsUpdate = 0
-        balloonPos = lite.grndPos
+        if lite.n % 3 == 0:
+            if not checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
+                lite.lastAprsUpdate += 1
+            else:
+                lite.lastAprsUpdate = 0
     # Else, try to get data from APRS
-    elif checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
+    elif lite.n > 1 and checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
         lite.lastGrndUpdate += 1
-        lite.lastAprsUpdate = 0
+        if lite.n % 3 == 0:
+            lite.lastAprsUpdate = 0
         balloonPos = aprsPos
         data["source"] = "aprs"
     # Else, get data from predicted value
     else:
         lite.lastGrndUpdate += 1
-        lite.lastAprsUpdate += 1
+        if lite.n % 3 == 0:
+            lite.lastAprsUpdate += 1
         balloonPos = predPos
+        balloonPos.append(-404)
         data["source"] = "pred"
     data["pos"] = balloonPos[0:3]
     data["utime"] = balloonPos[3]
@@ -160,7 +155,6 @@ def repeat():
     data["command"] = strCmd
     print(">> " + strCmd + "\n")
 
-    # Data not up to date if callsign not found
     if lite.lastGrndUpdate == 0 and balloonPos != [-404, -404, -404, -404]:
         print("Ground Station data is up to date")
     else:
@@ -174,7 +168,10 @@ def repeat():
               "Calls since last APRS update: " + str(lite.lastAprsUpdate) + "\n")
 
     if lite.mode == "actual":
-        lite.sock.send(bytes(strCmd, 'utf-8'))
+        try:
+            lite.sock.send(bytes(strCmd, 'utf-8'))
+        except OSError:
+            print("Socket closed, packet will not be sent")
 
     lite.log.append(data)
     time.sleep(1)

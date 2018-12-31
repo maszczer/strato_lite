@@ -1,0 +1,5 @@
+*.csv
+fak*
+test.py
+__pycache__/
+.idea/

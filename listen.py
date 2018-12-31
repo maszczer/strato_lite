@@ -2,8 +2,8 @@
 For local testing purposes
 Opens a socket that listens for TCP packets
 IP Address = localhost
-    Port # = 6000
-Strings sent to (localhost, 6000) will be printed to the terminal
+    Port # = 6001
+Strings sent to (localhost, 6001) will be printed to the terminal
 """
 import socket
 

@@ -2,7 +2,8 @@
 *~
 *.swp
 *.csv
+*.log
 fak*
 test.py
-__pycache__/
 .idea/
+__pycache__/

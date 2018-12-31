@@ -1,0 +1,46 @@
+Strato LITE Tracking and Prediction
+George Bryja III
+Started: February 2018
+Last Edit: December 2018
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This program is comprised of several files:
+   __main__.py
+   config.py
+   threads.py
+   commands.py
+   functions.py
+   predict.py
+
+NOTE: A valid APRS key is required to run this program.
+
+--CONFIG--
+Stores global variables used by other files throughout the life of this program.
+
+--THREADS--
+These (3) functions are called in main, and will run simultaneously.
+ 1. autoThread()
+   Runs the primary loop of the function using repeat(). This collects data from available sources, calculates the balloon's predicted location, and sends commands to orient the telescope. Data is then output to a .csv file.
+   NOTE: autoThread() is not actually run as a thread in main().
+
+ 2. userThread()
+   Handles user commands that are input during runtime.
+
+ 3. grndThread()
+   Listens on port 6001 for TCP packets from Ground Station.
+
+--COMMANDS--
+Relevant commands from userThread() will call functions from this file. Entering 'q' or 'quit' will end the program. 
+
+--FUNCTIONS--
+Contains various functions used throughout the life of this program.
+ > repeat()
+   Collects data from available sources, calculates the balloon's predict location, and sends commands to orient the telescope. This will be called within autoThread() every 10s.
+   NOTE: Ground Station update occurs every 10s, APRS calls occur every 30s.
+
+ > setMode()
+   Will determine if the program runs as TEST or ACTUAL. Commands for the telescope are sent as TCP packets only if running as ACTUAL.
+
+--PREDICT--
+Takes geodetic coordinates stored in an array ([lat, lng, alt]) as input, and outputs the balloon's next predicted location as an array of geodetic coordinates. Predictions are made for the balloon's location 30s in the future, thus a queue is used to store these values in config.py.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Credit to Austin Huffman and Beth Rosenbaum for updated algortihm in predict.py

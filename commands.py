@@ -2,8 +2,7 @@
 Functions for each user command
 These are called by userThread() in threads.py
 """
-import queue
-import setup as lite
+import config as lite
 
 ''' List available user commands '''
 def listCmds():

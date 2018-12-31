@@ -6,7 +6,7 @@ import numpy as np
 import pymap3d as pm
 import time, urllib.request
 import predict
-import setup as lite
+import config as lite
 
 ''' Converts coordinates from AZ, EL to HA, DEC '''
 def AZELtoHADEC(AZEL):

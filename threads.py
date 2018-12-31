@@ -2,7 +2,7 @@
 Repeat these functions until the quit command is entered
 """
 import csv, datetime, socket, time
-import setup as lite
+import config as lite
 import commands as cmd
 import functions as fcn
 

@@ -1,5 +1,4 @@
-import functions as fcn
-import setup as lite
+import config as lite
 
 # User instructions
 '''
@@ -38,15 +37,22 @@ where 'j' indicates the latitude, longitude, or altitude
     longitude: j = 1
     altitude:  j = 2
 
-Previous predicted values can also be referenced using
+Previous values can also be referenced using
     lite.log[i]["predPos"][j]
+for values output from predict.py
+
+    lite.log[i]["grndPos"][j]
+for values from Ground Station
+
+    lite.log[i]["aprsPos"][j]
+for values from APRS
 
 RESTRICTIONS
 ----------------
 This function is used to predict the position at iteration n
 When this function is called, lite.log[n] will not contain data
 
-To access the balloon's current position, use
+To access the balloon's current position, always use
     pos
 
 You are not allowed to use
@@ -54,8 +60,8 @@ You are not allowed to use
 to access data at the current iteration
 
 You are allowed to access data from previous iterations, using
-    lite.log[t]
-Where t must be an integer within the bounds of (t > 0) and (t < n)
+    lite.log[i]
+Where i must be an integer within the bounds of (i > 0) and (i < n)
 Failure to maintain this will result in
     IndexError: list out of range
 

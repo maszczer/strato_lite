@@ -40,6 +40,7 @@ NOTE: All these packages are available in PyCharm
 and returns a predicted *[latitude, longitude, altitude]*
 
 # Required Inputs #
+At runtime, the following will be required to begin tracking / prediction:
 
 - APRS key
 - Geodetic coordinates of the telescope (latitude, longitude, altitude)
@@ -50,6 +51,7 @@ and returns a predicted *[latitude, longitude, altitude]*
 - IP address & port number for the computer connected to the telescope  (*Actual* mode only)
 
 # In-flight Commands #
+While this program is running, the following commands can be used:
 
 - *'d'* or *'data'*: displays the most recently calculated data
 - *'p'* or *'pause'*: pauses telescope movement (toggles on / off)
@@ -57,3 +59,5 @@ and returns a predicted *[latitude, longitude, altitude]*
 - *'r'* or *'reset'*: orient telescope to its default position (3.66, -6.8)
 - *'s'* or *'status'*: Display flight setup info
 - *'q'* or *'quit'*: exits the program
+
+For further reading on how this program is structured, see *program_structure.md*

@@ -51,9 +51,9 @@ and returns a predicted *[latitude, longitude, altitude]*
 
 # In-flight Commands #
 
-- 'd' or 'data': displays the most recently calculated data
-- 'p' or 'pause': pauses telescope movement (toggles on / off)
-- 'o' or 'offset': change an applied offset to the predicted Hour Angle & Declination
-- 'r' or 'reset': orient telescope to its default position (3.66, -6.8)
-- 's' or 'status': Display flight setup info
-- 'q' or 'quit': exits the program
+- *'d'* or *'data'*: displays the most recently calculated data
+- *'p'* or *'pause'*: pauses telescope movement (toggles on / off)
+- *'o'* or *'offset'*: change an applied offset to the predicted Hour Angle & Declination
+- *'r'* or *'reset'*: orient telescope to its default position (3.66, -6.8)
+- *'s'* or *'status'*: Display flight setup info
+- *'q'* or *'quit'*: exits the program

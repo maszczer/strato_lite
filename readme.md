@@ -10,7 +10,7 @@ python3 main.py
 
 For making a prediction, data will be retrieved from one of the following methods:
 
-- Ground Station, which transmits data to a socket on the local machine using port 6000
+- Ground Station, which transmits data to port 6001 on your localhost
 - APRS, which updates approximately every 30 sec
 - Previous predicted values
 

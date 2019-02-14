@@ -11,8 +11,7 @@ def main():
     autoThread.start()
     threads.userThread()
 
-if (__name__ == "__main__"):
-    main()
+main()
 
 '''
 TODO

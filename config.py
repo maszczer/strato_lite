@@ -4,16 +4,16 @@ Setup variables to be used globally throughout program
 import queue
 
 ## HELPER FUNCTIONS ##
-''' Return true if string is a numerical value '''
 def checkNum(strIn):
+    ''' Return true if string is a numerical value '''
     try:
         float(strIn)
         return True
     except ValueError:
         return False
 
-''' Generic value for setting variable's value from user input '''
 def setVar(varStr):
+    ''' Generic value for setting variable's value from user input '''
     while True:
         var = input("> Enter " + varStr + "\n")
         confirm = input("Is this correct?\n"
@@ -23,8 +23,8 @@ def setVar(varStr):
 
     return var
 
-''' Set reference position (geodetic) from user input '''
 def setRefPos():
+    ''' Set reference position (geodetic) from user input '''
     refPos = []
     print("Geodetic coordinates of telescope required")
     while True:
@@ -43,8 +43,8 @@ def setRefPos():
 
     return refPos
 
-''' Initializes Queue for predicted positions '''
 def initPredQueue():
+    ''' Initializes Queue for predicted positions '''
     predQueue = queue.Queue()
     for i in range(3):
         predQueue.put([-404, -404, -404, -404])

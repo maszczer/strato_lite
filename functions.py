@@ -8,8 +8,8 @@ import time, urllib.request
 import predict
 import config as lite
 
-''' Converts coordinates from AZ, EL to HA, DEC '''
 def AZELtoHADEC(AZEL):
+    ''' Converts coordinates from AZ, EL to HA, DEC '''
     a = AZEL[1]
     z = 90 - a
     A = AZEL[0]
@@ -29,16 +29,16 @@ def AZELtoHADEC(AZEL):
 
     return [ha, dec]
 
-''' Get latitude, longitude, altitude, and utime from Ground Station '''
 def getGrndPos(data):
+    ''' Get latitude, longitude, altitude, and utime from Ground Station '''
     lat = float(data[10])
     lng = float(data[11])
     alt = float(data[14])
     utime = float(data[1])
     return [lat, lng, alt, utime]
 
-''' Get latitude, longitude, altitude, and utime from APRS '''
 def getAprsPos():
+    ''' Get latitude, longitude, altitude, and utime from APRS '''
     url = "https://api.aprs.fi/api/get?name=" + lite.callsign + \
           "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
     with urllib.request.urlopen(url) as f:
@@ -75,8 +75,8 @@ def getAprsPos():
             lat = lng = alt = utime = -404
     return [lat, lng, alt, utime]
 
-''' Check if data from Ground Station or APRS has updated '''
 def checkUpdate(pos, logdata):
+    ''' Check if data from Ground Station or APRS has updated '''
     if pos[0:3] == [-404, -404, -404]:
         return False
     elif lite.n > 0:
@@ -87,8 +87,8 @@ def checkUpdate(pos, logdata):
     else:
         return True
 
-''' Pull data from Ground Station and APRS & perform calculations '''
 def repeat():
+    ''' Pull data from Ground Station and APRS & perform calculations '''
     data = {"source": "grnd"}
     # APRS calls are made every 30 sec
     if lite.n % 3 == 0:
@@ -142,7 +142,7 @@ def repeat():
     # Print HA, DEC
     print("--------------------------------------------\n"
           "   HA: " + str(round(predHADEC[0], 4)) + " deg\n"
-          "  DEC: " + str(round(predHADEC[1], 4)) + " deg")
+                                                    "  DEC: " + str(round(predHADEC[1], 4)) + " deg")
     data["azel"] = [az, el, range]
     data["hadec"] = predHADEC
 
@@ -176,8 +176,8 @@ def repeat():
     lite.log.append(data)
     time.sleep(1)
 
-''' Specify mode to run in main() '''
 def setMode():
+    ''' Specify mode to run in main() '''
     print("LITE has two modes for tracking")
     while True:
         mode = input("Run as 'TEST' or 'ACTUAL'?\n")

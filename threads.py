@@ -6,10 +6,10 @@ import config as lite
 import commands as cmd
 import functions as fcn
 
-''' Pulls data from APRS, performs calculations, & outputs to .csv file '''
 def autoThread():
+    ''' Pulls data from APRS, performs calculations, & outputs to .csv file '''
     # Output log to csv
-    filename = 'tracking_' + lite.mode + '_'\
+    filename = 'tracking_' + lite.mode + '_' \
                + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
     with open(filename, 'w') as myfile:
         writer = csv.writer(myfile, delimiter=',',
@@ -72,8 +72,8 @@ def autoThread():
             time.sleep(8)
         myfile.close()
 
-''' Handles mid-flight user commands '''
 def userThread():
+    ''' Handles mid-flight user commands '''
     options = {
         "h": cmd.listCmds, "help": cmd.listCmds,
         "s": cmd.status, "status": cmd.status,
@@ -90,8 +90,8 @@ def userThread():
         except KeyError:
             print("Invalid command\n")
 
-''' Listens for TCP packets from Ground Station on port 6000 '''
 def grndThread():
+    ''' Listens for TCP packets from Ground Station on port 6000 '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("localhost", 6000))
     sock.listen(5)

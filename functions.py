@@ -142,7 +142,7 @@ def repeat():
     # Print HA, DEC
     print("--------------------------------------------\n"
           "   HA: " + str(round(predHADEC[0], 4)) + " deg\n"
-                                                    "  DEC: " + str(round(predHADEC[1], 4)) + " deg")
+          "  DEC: " + str(round(predHADEC[1], 4)) + " deg")
     data["azel"] = [az, el, range]
     data["hadec"] = predHADEC
 

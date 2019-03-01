@@ -168,6 +168,7 @@ def repeat():
                                         lite.refPos[0], lite.refPos[1], lite.refPos[2])
         predHADEC = AZELtoHADEC([az, el, range])
     else:
+        az, el, range = -404
         predHADEC = [3.66, -6.8]
 
     # Add in offset

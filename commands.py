@@ -39,12 +39,12 @@ def data():
         i = lite.n - 1
         print("-- DATA --\n"
               "Using " + lite.log[i]["source"] + " data:\n" +
-              printPos(lite.log[i]["pos"]) +
+              "Sent:\n" + printPos(lite.log[i]["pos"]) +
               " TIME: " + str(lite.log[i]["utime"]) + "\n" +
               printPos(lite.log[i]["azel"]) +
               "   HA: " + str(lite.log[i]["hadec"][0]) + " deg" +
               " w/ offset " + str(lite.offsetHA) + "\n"
-                                                   "  DEC: " + str(lite.log[i]["hadec"][1]) + " deg" +
+              "  DEC: " + str(lite.log[i]["hadec"][1]) + " deg" +
               " w/ offset " + str(lite.offsetDEC) + "\n" +
               "Predicted:\n" + printPos(lite.log[i]["predPos"]) +
               ">> " + lite.log[i]["command"])

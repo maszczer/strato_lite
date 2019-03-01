@@ -1,7 +1,7 @@
 """
 Setup variables to be used globally throughout program
 """
-import queue
+import datetime, os, queue
 
 ## HELPER FUNCTIONS ##
 def checkNum(strIn):
@@ -105,3 +105,7 @@ printed = False
 # socket for sending commands in tracking_ACTUAL
 TCP_IP = TCP_PORT = "Not set"
 sock = None
+
+""" CHANGE THIS TO INPUT """
+# Path to directory where .log files are saved
+path = os.path.sep + os.path.join('home', 'mxl') + os.path.sep + str(datetime.date.today()) + '.log'

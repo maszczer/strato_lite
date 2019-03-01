@@ -33,7 +33,7 @@ def getGrndPos(path):
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
     file = open(path, 'r')
     row = reversed(list(csv.reader(file)))
-    data = row.split(',')
+    data = next(row)
     lat = float(data[10])
     lng = float(data[11])
     alt = float(data[14])
@@ -106,7 +106,7 @@ def repeat():
     data = {"source": "grnd"}
     predPos = lite.predQueue.get()
     aprsPos = getAprsPos()
-    balloonPos = getGrndPos()
+    balloonPos = getGrndPos(lite.path)
     data["grndPos"] = lite.grndPos[0:3]
     data["aprsPos"] = aprsPos[0:3]
     data["predPos"] = predPos[0:3]

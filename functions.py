@@ -8,6 +8,23 @@ import time, urllib.request
 import predict
 import config as lite
 
+# From https://gis.stackexchange.com/questions/230160/converting-wgs84-to-ecef-in-python
+def gps_to_ecef_custom(lat, lon, alt):
+    rad_lat = lat * (math.pi / 180.0)
+    rad_lon = lon * (math.pi / 180.0)
+
+    a = 6378137.0
+    finv = 298.257223563
+    f = 1 / finv
+    e2 = 1 - (1 - f) * (1 - f)
+    v = a / math.sqrt(1 - e2 * math.sin(rad_lat) * math.sin(rad_lat))
+
+    x = (v + alt) * math.cos(rad_lat) * math.cos(rad_lon)
+    y = (v + alt) * math.cos(rad_lat) * math.sin(rad_lon)
+    z = (v * (1 - e2) + alt) * math.sin(rad_lat)
+
+    return x, y, z
+
 def AZELtoHADEC(AZEL):
     ''' Converts coordinates from AZ, EL to HA, DEC '''
     a = AZEL[1]
@@ -29,15 +46,23 @@ def AZELtoHADEC(AZEL):
 
     return [ha, dec]
 
+def getLogData(data, idx):
+    try:
+        value = float(data[idx].strip("'"))
+    # If no value, then = 0
+    except ValueError:
+        value = 0
+    return value
+
 def getGrndPos(path):
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
     file = open(path, 'r')
     row = reversed(list(csv.reader(file)))
     data = next(row)
-    lat = float(data[10])
-    lng = float(data[11])
-    alt = float(data[14])
-    utime = float(data[1])
+    lat = getLogData(data, 10)
+    lng = getLogData(data, 11)
+    alt = getLogData(data, 14)
+    utime = getLogData(data, 1)
     file.close()
     return [lat, lng, alt, utime]
 
@@ -104,7 +129,7 @@ def printLastUpdate(sourceName, lastUpdate, pos):
 def repeat():
     ''' Pull data from Ground Station and APRS & perform calculations '''
     data = {"source": "grnd"}
-    predPos = lite.predQueue.get()
+    predPos = lite.predPos
     aprsPos = getAprsPos()
     balloonPos = getGrndPos(lite.path)
     data["grndPos"] = lite.grndPos[0:3]
@@ -130,7 +155,7 @@ def repeat():
         lite.lastGrndUpdate += 1
         lite.lastAprsUpdate += 1
         balloonPos = predPos
-        balloonPos.append(-404)
+        #balloonPos.append(-404)
         data["source"] = "pred"
     data["pos"] = balloonPos[0:3]
     data["utime"] = balloonPos[3]
@@ -138,9 +163,12 @@ def repeat():
     lite.predQueue.put(predict.predict(balloonPos[0:3]))
 
     # Coordinate conversions
-    az, el, range = pm.geodetic2aer(predPos[0], predPos[1], predPos[2],
-                                    lite.refPos[0], lite.refPos[1], lite.refPos[2])
-    predHADEC = AZELtoHADEC([az, el, range])
+    if checkUpdate(predPos, [-404, -404, -404]):
+        az, el, range = pm.geodetic2aer(predPos[0], predPos[1], predPos[2],
+                                        lite.refPos[0], lite.refPos[1], lite.refPos[2])
+        predHADEC = AZELtoHADEC([az, el, range])
+    else:
+        predHADEC = [3.66, -6.8]
 
     # Add in offset
     predHADEC[0] += lite.offsetHA

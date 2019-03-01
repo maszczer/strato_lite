@@ -41,7 +41,9 @@ def data():
               "Using " + lite.log[i]["source"] + " data:\n" +
               "Sent:\n" + printPos(lite.log[i]["pos"]) +
               " TIME: " + str(lite.log[i]["utime"]) + "\n" +
-              printPos(lite.log[i]["azel"]) +
+              "   AZ: " + str(lite.log[i]["azel"][0]) + " deg\n" + \
+              "   EL: " + str(lite.log[i]["azel"][1]) + " deg\n" + \
+              "RANGE: " + str(lite.log[i]["azel"][2]) + " m\n" +
               "   HA: " + str(lite.log[i]["hadec"][0]) + " deg" +
               " w/ offset " + str(lite.offsetHA) + "\n"
               "  DEC: " + str(lite.log[i]["hadec"][1]) + " deg" +

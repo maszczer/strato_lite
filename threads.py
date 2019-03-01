@@ -5,8 +5,24 @@ import csv, datetime, socket, time
 import config as lite
 import commands as cmd
 import functions as fcn
+import predict, queue
 
-def autoThread():
+def autoThread10():
+    ''' Every 10 sec, update data from Ground Station & predict position 30 sec out '''
+    # Update data from Ground Station
+    lite.grndPos = fcn.getGrndPos(lite.path)
+    # Store prediction for position 30 sec
+    balloonPos = lite.grndPos
+    if lite.n > 1 and fcn.checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
+        balloonPos = lite.predPos
+    lite.predQueue.put(predict.predict(balloonPos))
+    # Update prediction queue in config.py
+    lite.predPos = lite.predQueue.get()
+    if (len(lite.predPos) < 4):
+        lite.predPos.append(-404)
+    time.sleep(10)
+
+def autoThread30():
     ''' Pulls data from APRS, performs calculations, & outputs to .csv file '''
     # Output log to csv
     filename = 'tracking_' + lite.mode + '_' \

@@ -88,6 +88,7 @@ grndPos = [-404, -404, -404, -404]
 
 # Queue for storing predPos for 30 sec ahead
 predQueue = initPredQueue()
+predPos = [-404, -404, -404, -404]
 
 # N iterations since last APRS update
 lastGrndUpdate = lastAprsUpdate = 0
@@ -108,4 +109,15 @@ sock = None
 
 """ CHANGE THIS TO INPUT """
 # Path to directory where .log files are saved
-path = os.path.sep + os.path.join('home', 'mxl') + os.path.sep + str(datetime.date.today()) + '.log'
+""" UNCOMMENT THE FOLLOWING LINES """
+#path = os.path.sep + os.path.join('home', 'mxl') + os.path.sep + str(datetime.date.today()) + '.log'
+
+""" COMMENT OUT THE LINES BELOW """
+arr = os.path.abspath('.').split(os.path.sep)[:-1]
+path = ''
+for i in range(len(arr)):
+    path += arr[i]
+    if i < len(arr) - 1:
+        path += os.path.sep
+path = os.path.join(path, '2018-11-26.log')
+""" COMMENT OUT THE LINES ABOVE """

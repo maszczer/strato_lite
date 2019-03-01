@@ -1,7 +1,7 @@
 """
 Functions shared by LITE files
 """
-import datetime, math, socket, queue
+import csv, datetime, math, socket, queue
 import numpy as np
 import pymap3d as pm
 import time, urllib.request
@@ -29,28 +29,32 @@ def AZELtoHADEC(AZEL):
 
     return [ha, dec]
 
-def getGrndPos(data):
-    ''' Get latitude, longitude, altitude, and utime from Ground Station '''
+def getGrndPos(path):
+    ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
+    file = open(path, 'r')
+    row = reversed(list(csv.reader(file)))
+    data = row.split(',')
     lat = float(data[10])
     lng = float(data[11])
     alt = float(data[14])
     utime = float(data[1])
+    file.close()
     return [lat, lng, alt, utime]
 
 def getAprsPos():
     ''' Get latitude, longitude, altitude, and utime from APRS '''
     url = "https://api.aprs.fi/api/get?name=" + lite.callsign + \
           "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
-    with urllib.request.urlopen(url) as f:
-        text = f.readline()
+    lat = lng = alt = utime = None
+    try:
         # This must be called twice
-        text = f.readline()
+        text = urllib.request.urlopen(url).readline()
+        text = urllib.request.urlopen(url).readline()
         if text.find(b'<found>1'):
             outline = text.decode("utf-8")
             outline = outline.replace("<"," ").replace(">"," ")
             line = outline.split()
 
-            lat = lng = alt = utime = None
             i = 0
             while i < len(line):
                 if line[i] == 'time' and not utime:
@@ -69,6 +73,8 @@ def getAprsPos():
                     i += 1
                     alt = float(line[i])
                 i += 1
+    except urllib.error.URLError:
+        print("URL not found\n")
 
         # If callsign data not found
         if not (lat and lng and alt and utime):
@@ -87,16 +93,20 @@ def checkUpdate(pos, logdata):
     else:
         return True
 
+def printLastUpdate(sourceName, lastUpdate, pos):
+    ''' Print last update instance for Ground Station or APRS '''
+    if lastUpdate == 0 and pos != [-404, -404, -404, -404]:
+        print(sourceName + " data is up to date")
+    else:
+        print(sourceName + " data is not up to date\n"
+              "Calls since last " + sourceName + " update: " + str(lastUpdate) + "\n")
+
 def repeat():
     ''' Pull data from Ground Station and APRS & perform calculations '''
     data = {"source": "grnd"}
-    # APRS calls are made every 30 sec
-    if lite.n % 3 == 0:
-        aprsPos = getAprsPos()
-    else:
-        aprsPos = lite.log[lite.n - 1]["aprsPos"]
     predPos = lite.predQueue.get()
-    balloonPos = lite.grndPos
+    aprsPos = getAprsPos()
+    balloonPos = getGrndPos()
     data["grndPos"] = lite.grndPos[0:3]
     data["aprsPos"] = aprsPos[0:3]
     data["predPos"] = predPos[0:3]
@@ -104,31 +114,27 @@ def repeat():
     # Try to get data from Ground Station
     if lite.n > 1 and checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
         lite.lastGrndUpdate = 0
-        if lite.n % 3 == 0:
-            if not checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
-                lite.lastAprsUpdate += 1
-            else:
-                lite.lastAprsUpdate = 0
+        # Also check for APRS update
+        if not checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
+            lite.lastAprsUpdate += 1
+        else:
+            lite.lastAprsUpdate = 0
     # Else, try to get data from APRS
     elif lite.n > 1 and checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
         lite.lastGrndUpdate += 1
-        if lite.n % 3 == 0:
-            lite.lastAprsUpdate = 0
+        lite.lastAprsUpdate = 0
         balloonPos = aprsPos
         data["source"] = "aprs"
-    # Else, get data from predicted value
+    # Else, get data from predicted values
     else:
         lite.lastGrndUpdate += 1
-        if lite.n % 3 == 0:
-            lite.lastAprsUpdate += 1
+        lite.lastAprsUpdate += 1
         balloonPos = predPos
         balloonPos.append(-404)
         data["source"] = "pred"
     data["pos"] = balloonPos[0:3]
     data["utime"] = balloonPos[3]
     data["isotime"] = datetime.datetime.now()
-
-    # Store new predicted position
     lite.predQueue.put(predict.predict(balloonPos[0:3]))
 
     # Coordinate conversions
@@ -150,22 +156,15 @@ def repeat():
     # String command sent to telescope
     strCmd = "#12;"
     # Minimum elevation for telescope movement is 16 deg
-    if el >= 16 and not lite.pause and balloonPos != [-404, -404, -404, -404]:
+    if el >= 16 and balloonPos != [-404, -404, -404, -404] and not lite.pause:
         strCmd = "#33," + str(predHADEC[0]) + "," + str(predHADEC[1]) + ";"
+    else:
+        print("Balloon altitude too low\n")
     data["command"] = strCmd
     print(">> " + strCmd + "\n")
 
-    if lite.lastGrndUpdate == 0 and balloonPos != [-404, -404, -404, -404]:
-        print("Ground Station data is up to date")
-    else:
-        print("Ground Station data is not up to date\n"
-              "Calls since last Ground Station update: " + str(lite.lastGrndUpdate) + "\n")
-
-    if lite.lastAprsUpdate == 0 and balloonPos != [-404, -404, -404, -404]:
-        print("APRS data is up to date")
-    else:
-        print("APRS data is not up to date\n"
-              "Calls since last APRS update: " + str(lite.lastAprsUpdate) + "\n")
+    printLastUpdate("Ground Station", lite.lastGrndUpdate, balloonPos)
+    printLastUpdate("APRS", lite.lastAprsUpdate, balloonPos)
 
     if lite.mode == "actual":
         try:

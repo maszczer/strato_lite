@@ -68,8 +68,8 @@ def autoThread():
             myfile.flush()
             lite.n += 1
             lite.printed = True
-            # Sleep for 8 sec, since 2 sec buffer in repeat()
-            time.sleep(8)
+            # Sleep for 28 sec, since 2 sec buffer in repeat()
+            time.sleep(28)
         myfile.close()
 
 def userThread():
@@ -89,19 +89,3 @@ def userThread():
             options[command]()
         except KeyError:
             print("Invalid command\n")
-
-def grndThread():
-    ''' Listens for TCP packets from Ground Station on port 6000 '''
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(("localhost", 6000))
-    sock.listen(5)
-    while lite.live:
-        client_sock = sock.accept()[0]
-        data = client_sock.recv(1024)
-        if bool(data):
-            data.decode('utf-8')
-            data = data.split(',')
-        else:
-            data = [-404] * 15
-        lite.grndPos = fcn.getGrndPos(data)
-        time.sleep(10)

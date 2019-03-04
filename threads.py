@@ -8,6 +8,38 @@ import functions as fcn
 import predict, queue
 
 def autoThread10():
+    """
+    filename = "lite_tracking_" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".csv"
+    with open(filename, 'w') as file:
+        writer = csv.writer(file, delimiter=',',
+                            lineterminator='\n', quoting=csv.QUOTE_ALL)
+        writer.writerow([
+            "lat (deg)",
+            "lng (deg)",
+            "alt (m)",
+            "az (deg)",
+            "el (deg)",
+            "range (m)",
+            "ha (deg)",
+            "dec (deg)",
+            "ha_offset (deg)",
+            "dec_offset (deg)",
+            "utime",
+            "isotime",
+            "ground_lat (deg)",
+            "ground_lng (deg)",
+            "ground_alt (m)",
+            "aprs_lat (deg)",
+            "aprs_lng (deg)",
+            "aprs_alt (m)",
+            "pred_lat (deg)",
+            "pred_lng (deg)",
+            "pred_alt (m)",
+            "command",
+            "source"
+        ])
+    :return:
+    """
     ''' Every 10 sec, update data from Ground Station & predict position 30 sec out '''
     # Update data from Ground Station
     lite.grndPos = fcn.getGrndPos(lite.path)

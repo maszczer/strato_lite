@@ -1,19 +1,15 @@
-"""
-Functions shared by LITE files
-"""
-import csv, datetime, math, socket, queue
+import csv, json, math
 import numpy as np
 import pymap3d as pm
-import time, urllib.request
-import predict
+import urllib.request
 import config as lite
 
-def AZELtoHADEC(AZEL):
+def azel_to_hadec(azel):
     ''' Converts coordinates from AZ, EL to HA, DEC '''
-    a = AZEL[1]
+    a = azel[1]
     z = 90 - a
-    A = AZEL[0]
-    phi = lite.refPos[0]
+    A = azel[0]
+    phi = lite.ref_pos[0]
     # Python math requires radian values
     z_rad = math.radians(z)
     A_rad = math.radians(A)
@@ -24,204 +20,145 @@ def AZELtoHADEC(AZEL):
                    - math.tan(dec) * math.tan(phi_rad))
     ha = math.degrees(ha) / 15.0
     dec = math.degrees(dec)
-    if AZEL[0] > 0 and AZEL[0] < 180:
+    if azel[0] > 0 and azel[0] < 180:
         ha *= -1
     return [ha, dec]
 
-def getLogData(data, idx):
+def get_ground_value(data, idx):
     ''' Get value from row in log data '''
     try:
         value = float(data[idx].strip("'"))
-    # If no value, then = 0
+    # If no value, then return 0
     except ValueError:
         value = 0
     return value
 
-def getGrndPos(path):
+def get_ground_pos():
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
-    file = open(path, 'r')
+    file = open(lite.log_path, 'r')
     row = reversed(list(csv.reader(file)))
-    while True:
-        # Ensure .log data is from the correct callsign
-        data = next(row)
-        if getLogData(data, 3) == lite.callsign_groundstation:
-            lat = getLogData(data, 10)
-            lng = getLogData(data, 11)
-            alt = getLogData(data, 14)
-            utime = getLogData(data, 1)
-            break
-    file.close()
-    return [lat, lng, alt, utime]
-
-def getAprsPos():
-    ''' Get latitude, longitude, altitude, and utime from APRS '''
-    url = "https://api.aprs.fi/api/get?name=" + lite.callsign_aprs + \
-          "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
-    lat = lng = alt = utime = None
+    # Ensure .log data read is from the correct callsign
     try:
-        # This must be called twice
-        text = urllib.request.urlopen(url).readline()
-        text = urllib.request.urlopen(url).readline()
-        if text.find(b'<found>1'):
-            outline = text.decode("utf-8")
-            outline = outline.replace("<"," ").replace(">"," ")
-            line = outline.split()
+        while True:
+            data = next(row)
+            if get_ground_value(data, 3) == lite.ground_callsign:
+                lat = get_ground_value(data, 10)
+                lng = get_ground_value(data, 11)
+                alt = get_ground_value(data, 14)
+                utime = get_ground_value(data, 1)
+                file.close()
+                return [lat, lng, alt, utime]
+    # If no data from callsign is found, return null_pos
+    except StopIteration:
+        return lite.null_pos
 
-            i = 0
-            while i < len(line):
-                if line[i] == 'time' and not utime:
-                    i += 1
-                    utime = float(line[i])
+def get_aprs_value(json_data, key):
+    ''' Get value from JSON data from APRS '''
+    try:
+        value = json_data['entries'][0][key]
+        return value
+    # If no value, then return 0
+    except KeyError:
+        return "0"
 
-                elif line[i] == 'lat' and not lat:
-                    i += 1
-                    lat = float(line[i])
+def get_aprs_pos():
+    ''' Get latitude, longitude, altitude, and utime from APRS '''
+    url = "https://api.aprs.fi/api/get?name=" + lite.aprs_callsign + \
+          "&what=loc&apikey=" + lite.aprs_key + "&format=json"
+    try:
+        response = urllib.request.urlopen(url)
+    # If URL is invalid
+    except ValueError:
+        return lite.null_pos
+    json_data = json.loads(response.read().decode())
+    # Check if JSON from APRS contains data
+    if json_data['result'] == "ok":
+        try:
+            lat = float(get_aprs_value(json_data, 'lat'))
+            lng = float(get_aprs_value(json_data, 'lng'))
+            alt = float(get_aprs_value(json_data, 'altitude'))
+            # Altitude should be stored at ['altitude'], but check for ['alt']
+            if alt == 0:
+                alt = float(get_aprs_value(json_data, 'alt'))
+            utime = get_aprs_value(json_data, 'time')
+            return [lat, lng, alt, utime]
+        # If no data from callsign is found, return null_pos
+        except KeyError:
+            return lite.null_pos
 
-                elif line[i] == 'lng' and not lng:
-                    i += 1
-                    lng = float(line[i])
-
-                elif line[i] == 'altitude' and not alt:
-                    i += 1
-                    alt = float(line[i])
-                i += 1
-    except urllib.error.URLError:
-        print("URL not found\n")
-
-        # If callsign data not found
-        if not (lat and lng and alt and utime):
-            lat = lng = alt = utime = -404
-    return [lat, lng, alt, utime]
-
-def checkUpdate(pos, logdata):
-    ''' Check if data from Ground Station or APRS has updated '''
-    if pos[0:3] == [-404, -404, -404]:
+def pos_is_updated(pos, log_data):
+    ''' Check if position data from source has updated '''
+    # Check if data is null
+    if pos == lite.null_pos[0:3]:
         return False
+    # Check if data for updates against previous data
     elif lite.n > 0:
-        if np.array_equal(pos, logdata):
+        if np.array_equal(pos, log_data):
             return False
         else:
             return True
+    # First instance of data will always be up to date
     else:
         return True
 
-def printLastUpdate(sourceName, lastUpdate, pos):
-    ''' Print last update instance for Ground Station or APRS '''
-    if lastUpdate == 0 and pos != [-404, -404, -404, -404]:
-        print(sourceName + " data is up to date")
+def get_updated_data(log_data):
+    ''' Determine which data source, if any, has updated most recently '''
+    # Check current data against null_pos
+    if lite.n == 0:
+        # Check for new Ground Station data
+        if pos_is_updated(lite.ground_pos[0:3], lite.null_pos[0:3]):
+            pos = lite.ground_pos
+            lite.last_ground_update = 0
+            log_data['source'] = "ground"
+            # Also check for APRS update
+            if pos_is_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
+                lite.last_aprs_udate = 0
+            else:
+                lite.last_aprs_udate += 1
+        # Else, for new check APRS data
+        elif pos_is_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
+            pos = lite.aprs_pos
+            lite.last_aprs_udate = 0
+            log_data['source'] = "aprs"
+            # Also increment for Ground Station update
+            lite.last_ground_update += 1
+    # Check current data against previous data
+    elif lite.n > 1:
+        # Check for new Ground Station data
+        if pos_is_updated(lite.ground_pos[0:3], lite.log[lite.n - 1]['ground_pos'][0:3]):
+            pos = lite.ground_pos
+            lite.last_ground_update = 0
+            log_data['source'] = "ground"
+            # Also check for APRS update
+            if pos_is_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
+                lite.last_aprs_udate = 0
+            else:
+                lite.last_aprs_udate += 1
+        # Else, for new check APRS data
+        elif pos_is_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
+            pos = lite.aprs_pos
+            lite.last_aprs_udate = 0
+            log_data['source'] = "aprs"
+            # Also increment for Ground Station update
+            lite.last_ground_update += 1
+    # If no data is up to date
     else:
-        print(sourceName + " data is not up to date\n"
-              "Calls since last " + sourceName + " update: " + str(lastUpdate) + "\n")
+        pos = lite.pred_pos
+        lite.last_ground_update += 1
+        lite.last_aprs_udate += 1
+        log_data['source'] = "pred"
+    return pos
 
-def repeat():
-    ''' Pull data from Ground Station and APRS & perform calculations '''
-    data = {"source": "grnd"}
-    predPos = lite.predPos
-    aprsPos = getAprsPos()
-    balloonPos = getGrndPos(lite.path)
-    data["grndPos"] = lite.grndPos[0:3]
-    data["aprsPos"] = aprsPos[0:3]
-    data["predPos"] = predPos[0:3]
-
-    # Try to get data from Ground Station
-    if lite.n > 1 and checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
-        lite.lastGrndUpdate = 0
-        # Also check for APRS update
-        if not checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
-            lite.lastAprsUpdate += 1
-        else:
-            lite.lastAprsUpdate = 0
-    # Else, try to get data from APRS
-    elif lite.n > 1 and checkUpdate(aprsPos, lite.log[lite.n - 1]["aprsPos"]):
-        lite.lastGrndUpdate += 1
-        lite.lastAprsUpdate = 0
-        balloonPos = aprsPos
-        data["source"] = "aprs"
-    # Else, get data from predicted values
+def get_hadec(pred_pos, log_data):
+    ''' Convert position from Geodetic to HADEC '''
+    if pos_is_updated(pred_pos[0:3], lite.null_pos[0:3]):
+        az, el, range = pm.geodetic2aer(pred_pos[0], pred_pos[1], pred_pos[2],
+                                        lite.ref_pos[0], lite.ref_pos[1], lite.ref_pos[2])
+        [ha, dec] = azel_to_hadec([az, el, range])
+        ha += lite.offset_ha
+        dec += lite.offset_dec
     else:
-        lite.lastGrndUpdate += 1
-        lite.lastAprsUpdate += 1
-        balloonPos = predPos
-        #balloonPos.append(-404)
-        data["source"] = "pred"
-    data["pos"] = balloonPos[0:3]
-    data["utime"] = balloonPos[3]
-    data["isotime"] = datetime.datetime.now()
-    lite.predQueue.put(predict.predict(balloonPos[0:3]))
-
-    # Coordinate conversions
-    if checkUpdate(predPos, [-404, -404, -404]):
-        az, el, range = pm.geodetic2aer(predPos[0], predPos[1], predPos[2],
-                                        lite.refPos[0], lite.refPos[1], lite.refPos[2])
-        predHADEC = AZELtoHADEC([az, el, range])
-    else:
-        az = el = range = -404
-        predHADEC = [3.66, -6.8]
-
-    # Add in offset
-    predHADEC[0] += lite.offsetHA
-    predHADEC[1] += lite.offsetDEC
-    # Print HA, DEC
-    print("--------------------------------------------\n"
-          "   HA: " + str(round(predHADEC[0], 4)) + " deg\n"
-          "  DEC: " + str(round(predHADEC[1], 4)) + " deg")
-    data["azel"] = [az, el, range]
-    data["hadec"] = predHADEC
-
-    time.sleep(1)
-    # String command sent to telescope
-    strCmd = "#12;"
-    # Minimum elevation for telescope movement is 16 deg
-    if el >= 16 and balloonPos != [-404, -404, -404, -404] and not lite.pause:
-        strCmd = "#33," + str(predHADEC[0]) + "," + str(predHADEC[1]) + ";"
-    else:
-        print("Balloon altitude too low\n")
-    data["command"] = strCmd
-    print(">> " + strCmd + "\n")
-
-    printLastUpdate("Ground Station", lite.lastGrndUpdate, balloonPos)
-    printLastUpdate("APRS", lite.lastAprsUpdate, balloonPos)
-
-    if lite.mode == "actual":
-        try:
-            lite.sock.send(bytes(strCmd, 'utf-8'))
-        except OSError:
-            print("Socket closed, packet will not be sent")
-
-    lite.log.append(data)
-    time.sleep(1)
-
-def setMode():
-    ''' Specify mode to run in main() '''
-    print("LITE has two modes for tracking")
-    while True:
-        mode = input("Run as 'TEST' or 'ACTUAL'?\n")
-
-        ## TEST ##
-        if mode.lower() == "test":
-            confirm = input("Are you sure you want to begin running TEST?\n"
-                            "Type 'yes' to confirm, anything else to re-enter\n")
-            if confirm.lower() == "yes":
-                print("Running TEST ....\n")
-                break
-
-        ## ACTUAL ##
-        elif mode.lower() == "actual":
-            confirm = input("Telescope will begin moving\n"
-                            "Are you sure you want to begin running ACTUAL?\n"
-                            "Type 'yes' to confirm, anything else to re-enter\n")
-            if confirm.lower() == "yes":
-                ## TCP/IP ##
-                print("Connecting to telescope ....\n")
-                lite.TCP_IP = lite.setVar("IP address")
-                lite.TCP_PORT = int(lite.setVar("port number"))
-                lite.sock = socket.socket
-                lite.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                lite.sock.connect((lite.TCP_IP, lite.TCP_PORT))
-                print("Connection established ....\n")
-                lite.mode = "actual"
-                print("Running ACTUAL ....\n")
-                break
-
-        else:
-            print("Invalid mode\n")
+        az = el = range = ha = dec = -404
+    log_data['azel'] = [az, el, range]
+    log_data['hadec'] = [ha, dec]
+    return [ha, dec]

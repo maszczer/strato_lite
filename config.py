@@ -1,4 +1,4 @@
-import os, queue, socket
+import queue, socket
 
 ## HELPER FUNCTIONS ##
 def enforce_float(value, value_name):
@@ -22,10 +22,10 @@ def get_input_file(filename):
     file = open(filename, 'r')
     data = file.splitlines()
     aprs_key = data[0]
-    # Only lat, lon, alt stored as float
+    # Only lat, lng, alt stored as float
     lat = enforce_float(data[1], "latitude")
-    lon = enforce_float(data[2], "latitude")
-    alt = enforce_float(data[3], "latitude")
+    lng = enforce_float(data[2], "longitude")
+    alt = enforce_float(data[3], "altitude")
     # Other values are string
     aprs_callsign = ground_callsign = TCP_IP = TCP_PORT = log_path = None
     values = [
@@ -38,7 +38,7 @@ def get_input_file(filename):
     for i in range(4,9):
         values[i - 4] = data[i]
     file.close()
-    return aprs_key, [lat, lon, alt], aprs_callsign, ground_callsign, TCP_IP, TCP_PORT, log_path
+    return aprs_key, [lat, lng, alt], aprs_callsign, ground_callsign, TCP_IP, TCP_PORT, log_path
 
 def tcp_connect(ip_addr, port):
     ''' Connect to telescope over TCP/IP, if possible '''
@@ -113,8 +113,12 @@ aprs_pos = null_pos
 pred_pos = null_pos
 
 # Store 30 sec predictions in queue
-predQueue = init_pred_queue()
+pred_queue = init_pred_queue()
 
 # Number of iterations since last update
 last_ground_update = 0
 last_aprs_udate = 0
+
+# Manual offset
+offset_ha = 0
+offset_dec = 0

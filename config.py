@@ -1,69 +1,90 @@
-"""
-Setup variables to be used globally throughout program
-"""
-import datetime, os, queue
+import os, queue, socket
 
 ## HELPER FUNCTIONS ##
-def checkNum(strIn):
-    ''' Return true if string is a numerical value '''
+def enforce_float(value, value_name):
+    ''' Exit 1 if input is not float '''
     try:
-        float(strIn)
-        return True
+        return float(value)
     except ValueError:
-        return False
+        print("Error: " + value_name + " must be a float")
+        exit(1)
 
-def setVar(varStr):
-    ''' Generic value for setting variable's value from user input '''
-    while True:
-        var = input("> Enter " + varStr + "\n")
-        confirm = input("Is this correct?\n"
-                        "Type 'yes' to confirm, anything else to re-enter\n")
-        if confirm.lower() == "yes":
-            break
+def enforce_int(value, value_name):
+    ''' Exit 1 if input is not float '''
+    try:
+        return int(value)
+    except ValueError:
+        print("Error: " + value_name + " must be an int")
+        exit(1)
 
-    return var
+def get_input_file(filename):
+    ''' Get input variables from .txt file '''
+    file = open(filename, 'r')
+    data = file.splitlines()
+    aprs_key = data[0]
+    # Only lat, lon, alt stored as float
+    lat = enforce_float(data[1], "latitude")
+    lon = enforce_float(data[2], "latitude")
+    alt = enforce_float(data[3], "latitude")
+    # Other values are string
+    aprs_callsign = ground_callsign = TCP_IP = TCP_PORT = log_path = None
+    values = [
+        aprs_callsign,
+        ground_callsign,
+        TCP_IP,
+        TCP_PORT,
+        log_path
+    ]
+    for i in range(4,9):
+        values[i - 4] = data[i]
+    file.close()
+    return aprs_key, [lat, lon, alt], aprs_callsign, ground_callsign, TCP_IP, TCP_PORT, log_path
 
-def setRefPos():
-    ''' Set reference position (geodetic) from user input '''
-    refPos = []
-    print("Geodetic coordinates of telescope required")
-    while True:
-        lat = input("> Enter telescope latitude (deg)\n")
-        lng = input("> Enter telescope longitude (deg)\n")
-        alt = input("> Enter telescope altitude (m)\n")
-        if checkNum(lat) and checkNum(lng) and checkNum(alt):
-            print("Telescope coordinates : [" + lat + ", " + lng + ", " + alt + "]")
-            confirm = input("Is this correct?\n"
-                            "Type 'yes' to confirm, anything else to re-enter\n")
-            if confirm.lower() == "yes":
-                refPos = [float(lat), float(lng), float(alt)]
-                break
-        else:
-            print("Latitude, longitude, and altitude must be numbers\n")
+def tcp_connect(ip_addr, port):
+    ''' Connect to telescope over TCP/IP, if possible '''
+    # If IP Address and Port Number are NOT SET, continue without setting up socket
+    if ip_addr == "NOT SET" and port == "NOT SET":
+        print("TCP/IP connection not specified\n"
+              "No commands will be sent\n")
+    # Try to set up socket
+    else:
+        port_number = enforce_int(port, "TCP/IP Port Number")
+        try:
+            sock = socket.socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((ip_addr, port_number))
+            print("Connection established ....\n")
+        # If the specified IP Address and Port Number are not listening for TCP/IP packets
+        except ConnectionRefusedError:
+            confirm = input("Failed to connect, no commands will be sent\n"
+                            "Would you still like to continue?\n"
+                            "Type 'yes' to continue, anything else to quit\n")
+            if confirm.replace(" ", "") == "yes".lower():
+                exit(1)
 
-    return refPos
-
-def initPredQueue():
-    ''' Initializes Queue for predicted positions '''
-    predQueue = queue.Queue()
+def init_pred_queue():
+    ''' Initialize queue for 30 sec predictions '''
+    pred_queue = queue.Queue()
     for i in range(3):
-        predQueue.put([-404, -404, -404, -404])
-    return predQueue
+        pred_queue.put(null_pos)
+    return pred_queue
 
-## GLOBAL VARIABLES ##
-mode = "test"
+# Get data from input file
+aprs_key, ref_pos, aprs_callsign, ground_callsign,\
+TCP_IP, TCP_PORT, log_path = get_input_file(input("Enter input filename"))
+
+# Try connecting to telescope over TCP/IP
+tcp_connect(TCP_IP, TCP_PORT)
+
+# Set control variables
 live = True
 pause = False
 
-# APRS key
-print("A valid APRS.fi key is required to begin tracking")
-aprsKey = setVar("a registered APRS.fi key")
+# Current iteration, 10 sec interval
+n = 0
 
-# Reference Position (geodetic)
-refPos = setRefPos()
-
-# Callsign to track
-callsign = setVar("callsign")
+# Ensures data has been acquired before accessing
+printed = False
 
 '''
 log is a list containing data stored throughout the flight
@@ -73,9 +94,9 @@ containing the following elements:
     pos[]: stores [latitude, longitude, altitude] sent to telescope
     azel[]: stores [azimuth, elevation, range]
     hadec[]: stores [hourAngle, declination]
-    grndPos[]: stores [latitude, longitude, altitude] from Ground Station
-    aprsPos[]: stores [latitude, longitude, altitude] from APRS.fi
-    predPos[]: stores predicted [latitude, longitude, altitude]
+    grnd_pos[]: stores [latitude, longitude, altitude] from Ground Station
+    aprs_pos[]: stores [latitude, longitude, altitude] from APRS.fi
+    pred_pos[]: stores predicted [latitude, longitude, altitude]
     utime: timestamp from Ground Station or APRS packets
     isotime: timestamp from the user's system
     commmand: string sent to the telescope
@@ -83,41 +104,17 @@ containing the following elements:
 '''
 log = []
 
-# Latest position data stored from Ground Station
-grndPos = [-404, -404, -404, -404]
+# Null position data
+null_pos = [-404, -404, -404, -404]
 
-# Queue for storing predPos for 30 sec ahead
-predQueue = initPredQueue()
-predPos = [-404, -404, -404, -404]
+# Latest position data
+ground_pos = null_pos
+aprs_pos = null_pos
+pred_pos = null_pos
 
-# N iterations since last APRS update
-lastGrndUpdate = lastAprsUpdate = 0
+# Store 30 sec predictions in queue
+predQueue = init_pred_queue()
 
-# Current iteration
-n = 0
-
-# Manually addeded offset
-offsetHA = offsetDEC = 0.00
-
-# Indicates if any data has been pulled
-# An error will occur when calling 'data' or 'status' before any data has been pulled
-printed = False
-
-# socket for sending commands in tracking_ACTUAL
-TCP_IP = TCP_PORT = "Not set"
-sock = None
-
-""" CHANGE THIS TO INPUT """
-# Path to directory where .log files are saved
-""" UNCOMMENT THE FOLLOWING LINES """
-#path = os.path.sep + os.path.join('home', 'mxl') + os.path.sep + str(datetime.date.today()) + '.log'
-
-""" COMMENT OUT THE LINES BELOW """
-arr = os.path.abspath('.').split(os.path.sep)[:-1]
-path = ''
-for i in range(len(arr)):
-    path += arr[i]
-    if i < len(arr) - 1:
-        path += os.path.sep
-path = os.path.join(path, '2018-11-26.log')
-""" COMMENT OUT THE LINES ABOVE """
+# Number of iterations since last update
+last_ground_update = 0
+last_aprs_udate = 0

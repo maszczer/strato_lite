@@ -1,0 +1,9 @@
+my_aprs_key
+42.27667
+-83.74004
+291
+my_callsign_aprs
+my_callsign_groundstation
+NOT SET
+NOT SET
+/home/mxl/2019-03-04.log

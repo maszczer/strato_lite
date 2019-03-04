@@ -8,23 +8,6 @@ import time, urllib.request
 import predict
 import config as lite
 
-# From https://gis.stackexchange.com/questions/230160/converting-wgs84-to-ecef-in-python
-def gps_to_ecef_custom(lat, lon, alt):
-    rad_lat = lat * (math.pi / 180.0)
-    rad_lon = lon * (math.pi / 180.0)
-
-    a = 6378137.0
-    finv = 298.257223563
-    f = 1 / finv
-    e2 = 1 - (1 - f) * (1 - f)
-    v = a / math.sqrt(1 - e2 * math.sin(rad_lat) * math.sin(rad_lat))
-
-    x = (v + alt) * math.cos(rad_lat) * math.cos(rad_lon)
-    y = (v + alt) * math.cos(rad_lat) * math.sin(rad_lon)
-    z = (v * (1 - e2) + alt) * math.sin(rad_lat)
-
-    return x, y, z
-
 def AZELtoHADEC(AZEL):
     ''' Converts coordinates from AZ, EL to HA, DEC '''
     a = AZEL[1]
@@ -32,21 +15,21 @@ def AZELtoHADEC(AZEL):
     A = AZEL[0]
     phi = lite.refPos[0]
     # Python math requires radian values
-    zRad = math.radians(z)
-    ARad = math.radians(A)
-    phiRad = math.radians(phi)
-    dec = math.asin(math.cos(zRad) * math.sin(phiRad)
-                    + math.sin(zRad) * math.cos(phiRad) * math.cos(ARad))
-    ha = math.acos(math.cos(zRad) / (math.cos(dec) * math.cos(phiRad))
-                   - math.tan(dec) * math.tan(phiRad))
+    z_rad = math.radians(z)
+    A_rad = math.radians(A)
+    phi_rad = math.radians(phi)
+    dec = math.asin(math.cos(z_rad) * math.sin(phi_rad)
+                    + math.sin(z_rad) * math.cos(phi_rad) * math.cos(A_rad))
+    ha = math.acos(math.cos(z_rad) / (math.cos(dec) * math.cos(phi_rad))
+                   - math.tan(dec) * math.tan(phi_rad))
     ha = math.degrees(ha) / 15.0
     dec = math.degrees(dec)
     if AZEL[0] > 0 and AZEL[0] < 180:
         ha *= -1
-
     return [ha, dec]
 
 def getLogData(data, idx):
+    ''' Get value from row in log data '''
     try:
         value = float(data[idx].strip("'"))
     # If no value, then = 0
@@ -58,17 +41,21 @@ def getGrndPos(path):
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
     file = open(path, 'r')
     row = reversed(list(csv.reader(file)))
-    data = next(row)
-    lat = getLogData(data, 10)
-    lng = getLogData(data, 11)
-    alt = getLogData(data, 14)
-    utime = getLogData(data, 1)
+    while True:
+        # Ensure .log data is from the correct callsign
+        data = next(row)
+        if getLogData(data, 3) == lite.callsign_groundstation:
+            lat = getLogData(data, 10)
+            lng = getLogData(data, 11)
+            alt = getLogData(data, 14)
+            utime = getLogData(data, 1)
+            break
     file.close()
     return [lat, lng, alt, utime]
 
 def getAprsPos():
     ''' Get latitude, longitude, altitude, and utime from APRS '''
-    url = "https://api.aprs.fi/api/get?name=" + lite.callsign + \
+    url = "https://api.aprs.fi/api/get?name=" + lite.callsign_aprs + \
           "&what=loc&apikey=" + lite.aprsKey + "&format=xml"
     lat = lng = alt = utime = None
     try:

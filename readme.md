@@ -40,15 +40,19 @@ NOTE: All these packages are available in PyCharm
 and returns a predicted *[latitude, longitude, altitude]*
 
 # Required Inputs #
-At runtime, the following will be required to begin tracking / prediction:
+At runtime, the program will ask for a text file as input. This should be placed in the same directory as the program's files. It should be structured as follows:
 
-- APRS key
-- Geodetic coordinates of the telescope (latitude, longitude, altitude)
-- APRS callsign to track
-- Mode, which can be run as *test* or *actual*
-     - *Test*: track an APRS callsign and output data to the terminal and a *.csv* file
-     - *Actual*: perform the same functions as *Test* mode, but also output telescope-commands to a specified IP address & port number
-- IP address & port number for the computer connected to the telescope  (*Actual* mode only)
+1. APRS.fi key
+2. Latitude
+3. Longitude
+4. Altitude
+5. Callsign for APRS.fi
+6. Callsign for Ground Station
+7. Telescope computer's IP Address
+8. Telescope computer's Port Number that will listen for packets
+9. Path to `.log` file directory
+
+NOTE: Packets will not be sent over TCP/IP if the IP Address and Port Number are left as *Not Set*.
 
 # In-flight Commands #
 While this program is running, the following commands can be used:

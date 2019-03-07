@@ -1,15 +1,17 @@
 import config as lite
-import csv, datetime
+import datetime
 import functions as fcn
 import numpy as np
-import predict, time
+import predict
+import time
 
-def loop_every_10():
-    ''' Update data from Ground Station, prediction, and save data to lite.log[] '''
-
-    data = {}
-    # Update data from Ground Station
+def every_10_ground():
+    ''' Update Ground Station data '''
     lite.ground_pos = fcn.get_ground_pos()
+
+def every_10_else():
+    ''' Update prediction data and save data to lite.log[] '''
+    data = {}
     # Check all sources for relevant data
     pos = fcn.get_updated_data(data)
     data['pos'] = pos[0:3]
@@ -25,14 +27,27 @@ def loop_every_10():
     data['aprs_pos'] = lite.aprs_pos[0:3]
     data['pred_pos'] = lite.pred_pos[0:3]
     # Set command to be sent to telescope
-    command = "NOT SET"
-    # Minimum elevation for telescope movement is 16 deg
-    if data['azel'][1] >= 16 and not np.array_equal(pos, lite.null_pos) and not lite.pause:
-        command = "#33," + str(hadec[0]) + "," + str(hadec[1]) + ";"
-    data['command'] = command
+    lite.next_command = "NOT SET"
+    if not np.array_equal(pos, lite.null_pos) and not np.array_equal(pos, fcn.get_last_pred_pos()):
+        lite.next_command = "#33," + str(data['hadec'][0]) + "," + str(data['hadec'][1]) + ";"
+    data['command'] = lite.next_command
+    # Check if command is valid to send
+    lite.next_command_valid = fcn.is_command_valid(pos, data['azel'][1])
+    # Update lite.log[]
     lite.log.append(data)
-    time.sleep(10)
 
-def loop_every_30():
-    ''' Update data from APRS and send command to telescope '''
-    time.sleep(30)
+def every_30_aprs():
+    ''' Update data from APRS '''
+    # Update data from APRS
+    lite.aprs_pos = fcn.get_aprs_pos()
+
+def every_30_else():
+    ''' Send command to telescope '''
+    # Send command to telescope, if connected and meeting minimum elevation requirement
+    if lite.is_tcp_set(lite.TCP_IP, lite.TCP_PORT) and lite.next_command_valid and lite.next_command != "NOT SET":
+        # '#33,HA,DEC;' Provides values for HA, DEC to telescope
+        lite.sock.send(bytes(lite.next_command, 'utf-8'))
+        time.sleep(1)
+        # '#12;' Commands telescope to point towards current HA, DEC
+        lite.sock.send(bytes("#12;", 'utf-8'))
+        time.sleep(1)

@@ -1,15 +1,21 @@
-"""
-Repeat these functions until the quit command is entered
-"""
-import csv, datetime, socket, time
-import config as lite
+import csv
 import commands as cmd
+import config as lite
+import datetime
 import functions as fcn
-import predict, queue
+import loops
+import time
 
-def autoThread10():
-    """
-    filename = "lite_tracking_" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".csv"
+def auto_thread_10_ground():
+    ''' Update Ground Station data '''
+    # This is a separate thread to maintain functionality in the event of errors
+    loops.every_10_ground()
+    time.sleep(10)
+
+def auto_thread_10_else():
+    ''' Update prediction data and write log data to .csv '''
+    # Setup output file for flight-data
+    filename = "lite_tracking_flight_data_" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".csv"
     with open(filename, 'w') as file:
         writer = csv.writer(file, delimiter=',',
                             lineterminator='\n', quoting=csv.QUOTE_ALL)
@@ -38,74 +44,29 @@ def autoThread10():
             "command",
             "source"
         ])
-    :return:
-    """
-    ''' Every 10 sec, update data from Ground Station & predict position 30 sec out '''
-    # Update data from Ground Station
-    lite.grndPos = fcn.getGrndPos(lite.path)
-    # Store prediction for position 30 sec
-    balloonPos = lite.grndPos
-    if lite.n > 1 and fcn.checkUpdate(lite.grndPos, lite.log[lite.n - 1]["grndPos"]):
-        balloonPos = lite.predPos
-    lite.predQueue.put(predict.predict(balloonPos))
-    # Update prediction queue in config.py
-    lite.predPos = lite.predQueue.get()
-    if (len(lite.predPos) < 4):
-        lite.predPos.append(-404)
-    time.sleep(10)
-
-def autoThread30():
-    ''' Pulls data from APRS, performs calculations, & outputs to .csv file '''
-    # Output log to csv
-    filename = 'tracking_' + lite.mode + '_' \
-               + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.csv'
-    with open(filename, 'w') as myfile:
-        writer = csv.writer(myfile, delimiter=',',
-                            lineterminator='\n', quoting=csv.QUOTE_ALL)
-        writer.writerow([
-            "lat (deg)",
-            "lng (deg)",
-            "alt (m)",
-            "az (deg)",
-            "el (deg)",
-            "range (m)",
-            "ha (deg)",
-            "dec (deg)",
-            "utime",
-            "isotime",
-            "grndLat (deg)",
-            "grndLng (deg)",
-            "grndAlt (m)",
-            "aprsLat (deg)",
-            "aprsLng (deg)",
-            "aprsAlt (m)",
-            "predLat (deg)",
-            "predLng (deg)",
-            "predAlt (m)",
-            "command",
-            "source"
-        ])
 
         while lite.live:
-            fcn.repeat()
+            loops.every_10_else()
             # Send new log[] data to .csv
             data = []
-            logData = [
+            log_data = [
                 "pos",
                 "azel",
                 "hadec",
+                "hadec_offset",
                 "utime",
                 "isotime",
-                "grndPos",
-                "aprsPos",
-                "predPos",
+                "ground_pos",
+                "aprs_pos",
+                "pred_pos",
                 "command",
                 "source"
             ]
-            for datum in logData:
+            for datum in log_data:
                 # Ensure string values are not extended as char arrays
                 if datum == "command" or datum == "source":
                     data.append(lite.log[lite.n][datum])
+                # Ensure arrays of values are stored as multiple values
                 else:
                     try:
                         data.extend(lite.log[lite.n][datum])
@@ -113,17 +74,32 @@ def autoThread30():
                         data.append(lite.log[lite.n][datum])
             writer.writerow(data)
             # Flush buffer, force write to .csv
-            myfile.flush()
+            file.flush()
             lite.n += 1
             lite.printed = True
-            # Sleep for 28 sec, since 2 sec buffer in repeat()
-            time.sleep(28)
-        myfile.close()
+            time.sleep(10)
+        file.close()
 
-def userThread():
+def auto_thread_30_aprs():
+    ''' Update Ground Station data '''
+    # This is a separate thread to maintain functionality in the event of errors
+    loops.every_30_aprs()
+    time.sleep(30)
+
+def auto_thread_30_else():
+    ''' Thread executes every 30 seconds '''
+    loops.every_30_else()
+    # Flush buffer, force write to output file
+    lite.output_file.flush()
+    # 1 second buffer after sending each commands to the telescope
+    # 2 total, 1 for setting (HA, DEC) and 1 for "Go" command
+    time.sleep(28)
+
+def user_thread():
     ''' Handles mid-flight user commands '''
+    # Enumerate user commands
     options = {
-        "h": cmd.listCmds, "help": cmd.listCmds,
+        "h": cmd.list_commands, "help": cmd.list_commands,
         "s": cmd.status, "status": cmd.status,
         "d": cmd.data, "data": cmd.data,
         "o": cmd.offset, "offset": cmd.offset,
@@ -132,8 +108,8 @@ def userThread():
         "r": cmd.reset, "reset": cmd.reset,
     }
     while lite.live:
-        command = input("Type 'h' or 'help' to list commands\n")
+        command = fcn.input_out("Type 'h' or 'help' to list commands\n")
         try:
             options[command]()
         except KeyError:
-            print("Invalid command\n")
+            fcn.print_out("Invalid command\n")

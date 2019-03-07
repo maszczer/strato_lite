@@ -7,4 +7,4 @@ fak*
 test.py
 .idea/
 __pycache__/
-test_input.txt
+*.txt

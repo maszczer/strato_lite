@@ -7,7 +7,7 @@ Strings sent to (localhost, 6001) will be printed to the terminal
 """
 import socket
 
-''' Listen for TCP packets on port 6000 '''
+''' Listen for TCP packets on port 6001 '''
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("localhost", 6001))

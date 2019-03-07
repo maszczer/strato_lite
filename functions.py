@@ -1,8 +1,10 @@
-import csv, json, math
+import config as lite
+import csv
+import json
+import math
 import numpy as np
 import pymap3d as pm
 import urllib.request
-import config as lite
 
 def azel_to_hadec(azel):
     ''' Converts coordinates from AZ, EL to HA, DEC '''
@@ -35,19 +37,30 @@ def get_ground_value(data, idx):
 
 def get_ground_pos():
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
-    file = open(lite.log_path, 'r')
+    while True:
+        try:
+            file = open(lite.log_path, 'r')
+            break
+        except FileNotFoundError:
+            print("\nFile not found")
+            lite.get_input_file()
     row = reversed(list(csv.reader(file)))
     # Ensure .log data read is from the correct callsign
     try:
         while True:
             data = next(row)
-            if get_ground_value(data, 3) == lite.ground_callsign:
-                lat = get_ground_value(data, 10)
-                lng = get_ground_value(data, 11)
-                alt = get_ground_value(data, 14)
-                utime = get_ground_value(data, 1)
-                file.close()
-                return [lat, lng, alt, utime]
+            # Get data if the correct callsign is found
+            try:
+                if data[3].lower() == lite.ground_callsign.lower():
+                    lat = get_ground_value(data, 10)
+                    lng = get_ground_value(data, 11)
+                    alt = get_ground_value(data, 14)
+                    utime = get_ground_value(data, 1)
+                    file.close()
+                    return [lat, lng, alt, utime]
+                # Do nothing if row has no callsign
+            except ValueError:
+                pass
     # If no data from callsign is found, return null_pos
     except StopIteration:
         return lite.null_pos
@@ -86,7 +99,7 @@ def get_aprs_pos():
         except KeyError:
             return lite.null_pos
 
-def pos_is_updated(pos, log_data):
+def is_pos_updated(pos, log_data):
     ''' Check if position data from source has updated '''
     # Check if data is null
     if pos == lite.null_pos[0:3]:
@@ -103,20 +116,21 @@ def pos_is_updated(pos, log_data):
 
 def get_updated_data(log_data):
     ''' Determine which data source, if any, has updated most recently '''
+    pos = lite.null_pos
     # Check current data against null_pos
     if lite.n == 0:
         # Check for new Ground Station data
-        if pos_is_updated(lite.ground_pos[0:3], lite.null_pos[0:3]):
+        if is_pos_updated(lite.ground_pos[0:3], lite.null_pos[0:3]):
             pos = lite.ground_pos
             lite.last_ground_update = 0
             log_data['source'] = "ground"
             # Also check for APRS update
-            if pos_is_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
+            if is_pos_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
                 lite.last_aprs_udate = 0
             else:
                 lite.last_aprs_udate += 1
         # Else, for new check APRS data
-        elif pos_is_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
+        elif is_pos_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
             pos = lite.aprs_pos
             lite.last_aprs_udate = 0
             log_data['source'] = "aprs"
@@ -125,17 +139,17 @@ def get_updated_data(log_data):
     # Check current data against previous data
     elif lite.n > 1:
         # Check for new Ground Station data
-        if pos_is_updated(lite.ground_pos[0:3], lite.log[lite.n - 1]['ground_pos'][0:3]):
+        if is_pos_updated(lite.ground_pos[0:3], lite.log[lite.n - 1]['ground_pos'][0:3]):
             pos = lite.ground_pos
             lite.last_ground_update = 0
             log_data['source'] = "ground"
             # Also check for APRS update
-            if pos_is_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
+            if is_pos_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
                 lite.last_aprs_udate = 0
             else:
                 lite.last_aprs_udate += 1
         # Else, for new check APRS data
-        elif pos_is_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
+        elif is_pos_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
             pos = lite.aprs_pos
             lite.last_aprs_udate = 0
             log_data['source'] = "aprs"
@@ -150,8 +164,8 @@ def get_updated_data(log_data):
     return pos
 
 def get_hadec(pred_pos, log_data):
-    ''' Convert position from Geodetic to HADEC '''
-    if pos_is_updated(pred_pos[0:3], lite.null_pos[0:3]):
+    ''' Convert predicted position from Geodetic to HADEC '''
+    if is_pos_updated(pred_pos[0:3], lite.null_pos[0:3]):
         az, el, range = pm.geodetic2aer(pred_pos[0], pred_pos[1], pred_pos[2],
                                         lite.ref_pos[0], lite.ref_pos[1], lite.ref_pos[2])
         [ha, dec] = azel_to_hadec([az, el, range])
@@ -161,4 +175,36 @@ def get_hadec(pred_pos, log_data):
         az = el = range = ha = dec = -404
     log_data['azel'] = [az, el, range]
     log_data['hadec'] = [ha, dec]
+    log_data['hadec_offset'] = [lite.offset_ha, lite.offset_dec]
     return [ha, dec]
+
+def get_last_pred_pos():
+    ''' Return the last predicted geodetic position '''
+    if lite.n == 0:
+        return lite.null_pos
+    else:
+        return lite.log[lite.n - 1]['pred_pos']
+
+def is_command_valid(geodetic_pos, elevation):
+    ''' Check if next command is valid '''
+    # Must be greater than or equal to minimum elevation, non-null, and telescope movement must not be paused
+    if elevation >= lite.min_el and not np.array_equal(geodetic_pos, lite.null_pos) and not lite.pause:
+        # Might not need to check np.array_equal(geodetic_pos, lite.null_pos)
+        return True
+    else:
+        return False
+
+"""
+The following functions are used in place of input() and print()
+They will output to a text file in addition to their standard input/output
+"""
+def input_out(str_prompt):
+    ''' Get string input from user and write to output file '''
+    lite.output_file.write(str_prompt)
+    str_input = input(str_prompt)
+    lite.output_file.write(str_input)
+
+def print_out(str_input):
+    ''' Print and write to output file '''
+    lite.output_file.write(str_input)
+    print(str_input)

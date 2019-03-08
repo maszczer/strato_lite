@@ -42,8 +42,8 @@ def get_ground_pos():
             file = open(lite.log_path, 'r')
             break
         except FileNotFoundError:
-            print("\nFile not found")
-            lite.get_input_file()
+            print("File not found")
+            exit(1)
     row = reversed(list(csv.reader(file)))
     # Ensure .log data read is from the correct callsign
     try:
@@ -102,7 +102,7 @@ def get_aprs_pos():
 def is_pos_updated(pos, log_data):
     ''' Check if position data from source has updated '''
     # Check if data is null
-    if pos == lite.null_pos[0:3]:
+    if np.array_equal(pos, lite.null_pos[0:3]):
         return False
     # Check if data for updates against previous data
     elif lite.n > 0:
@@ -114,53 +114,51 @@ def is_pos_updated(pos, log_data):
     else:
         return True
 
+#TODO: Debug this
+def conditional_data_update(ground_pos, aprs_pos):
+    ''' Determine which data source, if any, has updated mosprintt recently '''
+    pos = lite.pred_pos
+    source = "ground"
+    # Check for new Ground Station data
+    if is_pos_updated(lite.ground_pos[0:3], ground_pos[0:3]):
+        pos = lite.ground_pos
+        lite.last_ground_update = 0
+        # Also check for APRS update
+        if is_pos_updated(lite.aprs_pos[0:3], aprs_pos[0:3]):
+            lite.last_aprs_update = 0
+        else:
+            lite.last_aprs_update += 1
+    # Else, check for new APRS data
+    elif is_pos_updated(lite.aprs_pos[0:3], aprs_pos[0:3]):
+        pos = lite.aprs_pos
+        lite.last_aprs_update = 0
+        source = "aprs"
+        # Also increment for Ground Station update
+        lite.last_ground_update += 1
+    else:
+        lite.last_ground_update += 1
+        lite.last_aprs_update += 1
+        source = "pred"
+    if len(pos) != 4:
+        pos.append(-404)
+    return pos, source
+
 def get_updated_data(log_data):
-    ''' Determine which data source, if any, has updated most recently '''
-    pos = lite.null_pos
+    ''' Get updated data from relevant source '''
+    pos = lite.pred_pos
+    source = "ground"
     # Check current data against null_pos
     if lite.n == 0:
-        # Check for new Ground Station data
-        if is_pos_updated(lite.ground_pos[0:3], lite.null_pos[0:3]):
-            pos = lite.ground_pos
-            lite.last_ground_update = 0
-            log_data['source'] = "ground"
-            # Also check for APRS update
-            if is_pos_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
-                lite.last_aprs_udate = 0
-            else:
-                lite.last_aprs_udate += 1
-        # Else, for new check APRS data
-        elif is_pos_updated(lite.aprs_pos[0:3], lite.null_pos[0:3]):
-            pos = lite.aprs_pos
-            lite.last_aprs_udate = 0
-            log_data['source'] = "aprs"
-            # Also increment for Ground Station update
-            lite.last_ground_update += 1
+        pos, source = conditional_data_update(lite.null_pos, lite.null_pos)
     # Check current data against previous data
     elif lite.n > 1:
-        # Check for new Ground Station data
-        if is_pos_updated(lite.ground_pos[0:3], lite.log[lite.n - 1]['ground_pos'][0:3]):
-            pos = lite.ground_pos
-            lite.last_ground_update = 0
-            log_data['source'] = "ground"
-            # Also check for APRS update
-            if is_pos_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
-                lite.last_aprs_udate = 0
-            else:
-                lite.last_aprs_udate += 1
-        # Else, for new check APRS data
-        elif is_pos_updated(lite.aprs_pos[0:3], lite.log[lite.n - 1]['aprs_pos'][0:3]):
-            pos = lite.aprs_pos
-            lite.last_aprs_udate = 0
-            log_data['source'] = "aprs"
-            # Also increment for Ground Station update
-            lite.last_ground_update += 1
-    # If no data is up to date
-    else:
-        pos = lite.pred_pos
-        lite.last_ground_update += 1
-        lite.last_aprs_udate += 1
-        log_data['source'] = "pred"
+        pos, source = conditional_data_update(lite.log[lite.n - 1]['ground_pos'],
+                                              lite.log[lite.n - 1]['aprs_pos'])
+        print_out(str(pos))
+        print_out(str(lite.log[lite.n - 1]['ground_pos']))
+        print_out(str(lite.log[lite.n - 1]['aprs_pos']))
+        print_out(str(lite.log[lite.n - 1]['pred_pos']))
+    log_data['source'] = source
     return pos
 
 def get_hadec(pred_pos, log_data):
@@ -200,11 +198,12 @@ They will output to a text file in addition to their standard input/output
 """
 def input_out(str_prompt):
     ''' Get string input from user and write to output file '''
-    lite.output_file.write(str_prompt)
+    lite.output_file.write(str_prompt + "\n")
     str_input = input(str_prompt)
-    lite.output_file.write(str_input)
+    lite.output_file.write(str_input + "\n")
+    return str_input
 
 def print_out(str_input):
     ''' Print and write to output file '''
-    lite.output_file.write(str_input)
-    print(str_input)
+    lite.output_file.write(str_input + "\n")
+    return str_input

@@ -10,7 +10,7 @@ def try_float(value, value_name, prompt):
     try:
         return float(new_value)
     except ValueError:
-        fcn.print_out("Error: " + value_name + " must be a float")
+        print(fcn.print_out("Error: " + value_name + " must be a float"))
         return value
 
 def enforce_float(value, value_name):
@@ -137,7 +137,7 @@ pred_queue = init_pred_queue()
 
 # Number of iterations since last update
 last_ground_update = 0
-last_aprs_udate = 0
+last_aprs_update = 0
 
 # Manual offset
 offset_ha = 0

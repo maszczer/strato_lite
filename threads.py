@@ -112,4 +112,4 @@ def user_thread():
         try:
             options[command]()
         except KeyError:
-            fcn.print_out("Invalid command\n")
+            print(fcn.print_out("Invalid command\n"))

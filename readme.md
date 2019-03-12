@@ -57,11 +57,11 @@ NOTE: Packets will not be sent over TCP/IP if the IP Address and Port Number are
 # In-flight Commands #
 While this program is running, the following commands can be used:
 
-- *'d'* or *'data'*: displays the most recently calculated data
-- *'p'* or *'pause'*: pauses telescope movement (toggles on / off)
-- *'o'* or *'offset'*: change an applied offset to the predicted Hour Angle & Declination
-- *'r'* or *'reset'*: orient telescope to its default position (3.66, -6.8)
-- *'s'* or *'status'*: Display flight setup info
-- *'q'* or *'quit'*: exits the program
+- `d`* or `data`: Displays the most recently calculated data
+- `p` or `pause`: Pauses telescope movement (toggles on / off)
+- `o` or `offset`: Change an applied offset to the predicted HA-DEC
+- `r` or `reset`: Orient telescope to its default HA-DEC position (3.66, -6.8)
+- `s` or `status`: Display flight setup info
+- `q` or `quit`: Exits the program
 
 For further reading on how this program is structured, see *program_structure.md*

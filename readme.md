@@ -10,7 +10,7 @@ python3 main.py
 
 For making a prediction, data will be retrieved from one of the following methods:
 
-- Ground Station, which transmits data to port 6001 on your localhost
+- Ground Station, which updates a `.log` file approximately every 10 sec
 - APRS, which updates approximately every 30 sec
 - Previous predicted values
 
@@ -36,7 +36,7 @@ NOTE: All these packages are available in PyCharm
 
 # Other Requirements #
 - A registered key is required for use with *APRS.fi* for callsign tracking
-- *predict.py* which takes in *[latitude, longitude, altitude]*
+- *predict.py* which requires a *[latitude, longitude, altitude]*
 and returns a predicted *[latitude, longitude, altitude]*
 
 # Required Inputs #
@@ -52,7 +52,7 @@ At runtime, the program will ask for a text file as input. This should be placed
 8. Telescope computer's Port Number that will listen for packets
 9. Path to `.log` file directory
 
-NOTE: Packets will not be sent over TCP/IP if the IP Address and Port Number are left as *Not Set*.
+NOTE: Packets will not be sent over TCP/IP if the IP Address and Port Number are left as *Not Set*, or if the computer is unable to connect to the desired machine.
 
 # In-flight Commands #
 While this program is running, the following commands can be used:

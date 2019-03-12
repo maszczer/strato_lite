@@ -3,9 +3,9 @@ import threads
 
 def main():
     # Thread-1 for APRS.fi
-    auto_thread_10_aprs = threading.Thread(target=threads.auto_thread_30_aprs)
-    auto_thread_10_aprs.daemon = True
-    auto_thread_10_aprs.start()
+    auto_thread_30_aprs = threading.Thread(target=threads.auto_thread_30_aprs)
+    auto_thread_30_aprs.daemon = True
+    auto_thread_30_aprs.start()
     # Thread-2 for Ground Station
     auto_thread_10_ground = threading.Thread(target=threads.auto_thread_10_ground)
     auto_thread_10_ground.daemon = True

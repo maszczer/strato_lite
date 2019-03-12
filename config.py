@@ -59,10 +59,6 @@ def tcp_connect(ip_addr, port, sock):
     ''' Connect to telescope over TCP/IP, if possible '''
     # If IP Address and Port Number are NOT SET, continue without setting up socket
     if is_tcp_set(ip_addr, port):
-        print("TCP/IP connection not specified\n"
-              "No commands will be sent\n")
-    # Try to set up socket
-    else:
         port_number = enforce_int(port, "TCP/IP Port Number")
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -73,8 +69,11 @@ def tcp_connect(ip_addr, port, sock):
             confirm = input("Failed to connect, no commands will be sent\n"
                             "Would you still like to continue?\n"
                             "Type 'yes' to continue, anything else to quit\n")
-            if confirm.replace(" ", "") == "yes".lower():
+            if confirm.replace(" ", "") != "yes".lower():
                 exit(1)
+    else:
+        print("TCP/IP connection not specified\n"
+              "No commands will be sent\n")
     return sock
 
 def init_pred_queue():

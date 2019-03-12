@@ -16,11 +16,11 @@ def list_commands():
 def status():
     ''' Print flight setup info '''
     print(fcn.print_out("-- STATUS --\n"
-          "APRS key: " + lite.aprs_key + "\n" +
+          "APRS key: " + lite.aprs_key +
           "Telescope coordinates : [" + str(lite.ref_pos[0]) + ", " +
           str(lite.ref_pos[1]) + ", " + str(lite.ref_pos[2]) + "]\n" +
-          "TCP_IP: " + lite.TCP_IP + "\n" +
-          "TCP_PORT: " + str(lite.TCP_PORT) + "\n" +
+          "TCP_IP: " + lite.TCP_IP +
+          "TCP_PORT: " + str(lite.TCP_PORT) +
           "Program has been running for " +
           str(round(lite.n * 10 / 60, 4)) + " min"))  # buggy
 

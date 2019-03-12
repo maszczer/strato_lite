@@ -8,9 +8,10 @@ import time
 
 def auto_thread_10_ground():
     ''' Update Ground Station data '''
-    # This is a separate thread to maintain functionality in the event of errors
-    loops.every_10_ground()
-    time.sleep(10)
+    while lite.live:
+        # This is a separate thread to maintain functionality in the event of errors
+        loops.every_10_ground()
+        time.sleep(10)
 
 def auto_thread_10_else():
     ''' Update prediction data and write log data to .csv '''
@@ -82,18 +83,20 @@ def auto_thread_10_else():
 
 def auto_thread_30_aprs():
     ''' Update Ground Station data '''
-    # This is a separate thread to maintain functionality in the event of errors
-    loops.every_30_aprs()
-    time.sleep(30)
+    while lite.live:
+        # This is a separate thread to maintain functionality in the event of errors
+        loops.every_30_aprs()
+        time.sleep(30)
 
 def auto_thread_30_else():
     ''' Thread executes every 30 seconds '''
-    loops.every_30_else()
-    # Flush buffer, force write to output file
-    lite.output_file.flush()
-    # 1 second buffer after sending each commands to the telescope
-    # 2 total, 1 for setting (HA, DEC) and 1 for "Go" command
-    time.sleep(28)
+    while lite.live:
+        loops.every_30_else()
+        # Flush buffer, force write to output file
+        lite.output_file.flush()
+        # 1 second buffer after sending each commands to the telescope
+        # 2 total, 1 for setting (HA, DEC) and 1 for "Go" command
+        time.sleep(28)
 
 def user_thread():
     ''' Handles mid-flight user commands '''

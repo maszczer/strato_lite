@@ -29,7 +29,7 @@ def azel_to_hadec(azel):
 def get_ground_value(data, idx):
     ''' Get value from row in log data '''
     try:
-        value = float(data[idx].strip("'"))
+        value = (data[idx].strip('\n'))
     # If no value, then return 0
     except ValueError:
         value = 0
@@ -37,13 +37,13 @@ def get_ground_value(data, idx):
 
 def get_ground_pos():
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
-    while True:
-        try:
-            file = open(lite.log_path, 'r')
-            break
-        except FileNotFoundError:
-            print("File not found")
-            exit(1)
+    file = None
+    lat = lng = alt = utime = -404
+    try:
+        file = open(lite.log_path, 'r') #TODO: iterator is not updating
+    except FileNotFoundError:
+        print("File not found")
+        exit(1)
     row = reversed(list(csv.reader(file)))
     # Ensure .log data read is from the correct callsign
     try:
@@ -51,18 +51,20 @@ def get_ground_pos():
             data = next(row)
             # Get data if the correct callsign is found
             try:
-                if data[3].lower() == lite.ground_callsign.lower():
-                    lat = get_ground_value(data, 10)
-                    lng = get_ground_value(data, 11)
-                    alt = get_ground_value(data, 14)
-                    utime = get_ground_value(data, 1)
+                if get_ground_value(data, 3).lower() == lite.ground_callsign.lower():
                     file.close()
+                    lat = float(get_ground_value(data, 10))
+                    lng = float(get_ground_value(data, 11))
+                    alt = float(get_ground_value(data, 14))
+                    utime = float(get_ground_value(data, 1))
                     return [lat, lng, alt, utime]
-                # Do nothing if row has no callsign
+            # Do nothing if row has no callsign
             except ValueError:
                 pass
+            utime = utime
     # If no data from callsign is found, return null_pos
     except StopIteration:
+        file.close()
         return lite.null_pos
 
 def get_aprs_value(json_data, key):
@@ -154,10 +156,6 @@ def get_updated_data(log_data):
     elif lite.n > 1:
         pos, source = conditional_data_update(lite.log[lite.n - 1]['ground_pos'],
                                               lite.log[lite.n - 1]['aprs_pos'])
-        print_out(str(pos))
-        print_out(str(lite.log[lite.n - 1]['ground_pos']))
-        print_out(str(lite.log[lite.n - 1]['aprs_pos']))
-        print_out(str(lite.log[lite.n - 1]['pred_pos']))
     log_data['source'] = source
     return pos
 

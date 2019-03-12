@@ -1,11 +1,10 @@
 import time
 
 # Simulate .log file by outputting values every 10 seconds
-filename = "testing_log_generator.log"
-file = open(filename, 'w')
+filename = "testing_log_generator_live.log"
 i = 0
 data = ""
-while i < 100:
+while True:
     file = open(filename, 'w')
     print(str(i) + " ...")
 #chan,utime,isotime,source,heard,level,error,dti,name,symbol,latitude,longitude,speed,course,altitude,frequency,offset,tone,system,status,comment
@@ -23,5 +22,7 @@ while i < 100:
 
     data += ',' + utime + ',,' + source + ',,,,,,,' + latitude + ',' + longitude + ',,,' + altitude + '\n'
     i += 1
-file.write(data)
-file.close()
+    file.write(data)
+    file.flush()
+    file.close()
+    time.sleep(10)

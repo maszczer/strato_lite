@@ -76,6 +76,9 @@ def auto_thread_10_else():
             writer.writerow(data)
             # Flush buffer, force write to .csv
             file.flush()
+            # Print data to terminal
+            print(fcn.print_out(fcn.print_data_small()))
+            # Increment iterator
             lite.n += 1
             lite.printed = True
             time.sleep(10)

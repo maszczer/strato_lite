@@ -66,7 +66,7 @@ def tcp_connect(ip_addr, port, sock):
             print("Connection established ....\n")
         # If the specified IP Address and Port Number are not listening for TCP/IP packets
         except ConnectionRefusedError:
-            confirm = input("Failed to connect, no commands will be sent\n"
+            confirm = input("Failed to connect to telescope, no commands will be sent\n"
                             "Would you still like to continue?\n"
                             "Type 'yes' to continue, anything else to quit\n")
             if confirm.replace(" ", "") != "yes".lower():

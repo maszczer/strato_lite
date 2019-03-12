@@ -1,5 +1,6 @@
 import config as lite
 import csv
+import datetime
 import json
 import math
 import numpy as np
@@ -16,15 +17,16 @@ def azel_to_hadec(azel):
     z_rad = math.radians(z)
     A_rad = math.radians(A)
     phi_rad = math.radians(phi)
-    dec = math.asin(math.cos(z_rad) * math.sin(phi_rad)
+    dec_rad = math.asin(math.cos(z_rad) * math.sin(phi_rad)
                     + math.sin(z_rad) * math.cos(phi_rad) * math.cos(A_rad))
-    ha = math.acos(math.cos(z_rad) / (math.cos(dec) * math.cos(phi_rad))
-                   - math.tan(dec) * math.tan(phi_rad))
-    ha = math.degrees(ha) / 15.0
-    dec = math.degrees(dec)
+    ha_rad = math.acos(math.cos(z_rad) / (math.cos(dec_rad) * math.cos(phi_rad))
+                   - math.tan(dec_rad) * math.tan(phi_rad))
+    # Convert back to degrees
+    ha_deg = math.degrees(ha_rad) / 15.0
+    dec_deg = math.degrees(dec_rad)
     if azel[0] > 0 and azel[0] < 180:
-        ha *= -1
-    return [ha, dec]
+        ha_deg *= -1
+    return [ha_deg, dec_deg]
 
 def get_ground_value(data, idx):
     ''' Get value from row in log data '''
@@ -39,8 +41,9 @@ def get_ground_pos():
     ''' Get latitude, longitude, altitude, and utime from Ground Station .log file '''
     file = None
     lat = lng = alt = utime = -404
+    # Read data from specified .log file
     try:
-        file = open(lite.log_path, 'r') #TODO: iterator is not updating
+        file = open(lite.log_path, 'r')
     except FileNotFoundError:
         print("File not found")
         exit(1)
@@ -49,7 +52,7 @@ def get_ground_pos():
     try:
         while True:
             data = next(row)
-            # Get data if the correct callsign is found
+            # Only get data if the correct callsign is found
             try:
                 if get_ground_value(data, 3).lower() == lite.ground_callsign.lower():
                     file.close()
@@ -61,7 +64,6 @@ def get_ground_pos():
             # Do nothing if row has no callsign
             except ValueError:
                 pass
-            utime = utime
     # If no data from callsign is found, return null_pos
     except StopIteration:
         file.close()
@@ -82,7 +84,7 @@ def get_aprs_pos():
           "&what=loc&apikey=" + lite.aprs_key + "&format=json"
     try:
         response = urllib.request.urlopen(url)
-    # If URL is invalid
+    # If URL is invalid, return null_pos
     except ValueError:
         return lite.null_pos
     json_data = json.loads(response.read().decode())
@@ -116,9 +118,8 @@ def is_pos_updated(pos, log_data):
     else:
         return True
 
-#TODO: Debug this
 def conditional_data_update(ground_pos, aprs_pos):
-    ''' Determine which data source, if any, has updated mosprintt recently '''
+    ''' Determine which data source, if any, has updated most recently '''
     pos = lite.pred_pos
     source = "ground"
     # Check for new Ground Station data
@@ -137,6 +138,7 @@ def conditional_data_update(ground_pos, aprs_pos):
         source = "aprs"
         # Also increment for Ground Station update
         lite.last_ground_update += 1
+    # Else if no data is up to date, use prediction
     else:
         lite.last_ground_update += 1
         lite.last_aprs_update += 1
@@ -161,14 +163,17 @@ def get_updated_data(log_data):
 
 def get_hadec(pred_pos, log_data):
     ''' Convert predicted position from Geodetic to HADEC '''
+    # Get AZEL and HADEC if data is updated
     if is_pos_updated(pred_pos[0:3], lite.null_pos[0:3]):
         az, el, range = pm.geodetic2aer(pred_pos[0], pred_pos[1], pred_pos[2],
                                         lite.ref_pos[0], lite.ref_pos[1], lite.ref_pos[2])
         [ha, dec] = azel_to_hadec([az, el, range])
         ha += lite.offset_ha
         dec += lite.offset_dec
+    # Set AZEL and HADEC to dummy values if no data update
     else:
         az = el = range = ha = dec = -404
+    # Push data to lite.log[]
     log_data['azel'] = [az, el, range]
     log_data['hadec'] = [ha, dec]
     log_data['hadec_offset'] = [lite.offset_ha, lite.offset_dec]
@@ -190,9 +195,24 @@ def is_command_valid(geodetic_pos, elevation):
     else:
         return False
 
+def print_data_small():
+    ''' Recurring print funciton called every 10 seconds '''
+    # Print HA, DEC
+    str_output = "--------------------------------------------\n"\
+          " TIME: " + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\n"\
+          "   HA: " + str(round(lite.log[lite.n]['hadec'][0], 4)) + " deg\n"\
+          "  DEC: " + str(round(lite.log[lite.n]['hadec'][1], 4)) + " deg\n"
+    # Indicate if command is sent to telescope during this iteration
+    if lite.n % 3 == 0:
+        str_output += "Sending command to telescope ....\n"
+    else:
+        str_output += "Next command will be sent in " + str((3 - lite.n % 3) * 10) + " seconds\n"
+    return str_output
+
 """
 The following functions are used in place of input() and print()
 They will output to a text file in addition to their standard input/output
+Call them using print(input_out(my_str)) or print(print_out(my_str))
 """
 def input_out(str_prompt):
     ''' Get string input from user and write to output file '''

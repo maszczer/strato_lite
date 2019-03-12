@@ -4,6 +4,7 @@ import functions as fcn
 import numpy as np
 import predict
 import time
+import urllib
 
 def every_10_ground():
     ''' Update Ground Station data '''
@@ -39,7 +40,10 @@ def every_10_else():
 def every_30_aprs():
     ''' Update data from APRS '''
     # Update data from APRS
-    lite.aprs_pos = fcn.get_aprs_pos()
+    try:
+        lite.aprs_pos = fcn.get_aprs_pos()
+    except urllib.error.URLError as e:
+        print(fcn.print_out("Failed to fetch data from APRS.fi\n"))
 
 def every_30_else():
     ''' Send command to telescope '''

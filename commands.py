@@ -1,7 +1,6 @@
 import config as lite
 import functions as fcn
 import time
-import socket
 
 def list_commands():
     ''' List available user commands '''
@@ -46,9 +45,9 @@ def data():
               " w/ offset " + str(lite.log[i]['hadec_offset'][0]) + "\n"
               "  DEC: " + str(lite.log[i]['hadec'][1]) + " deg" +
               " w/ offset " + str(lite.log[i]['hadec_offset'][1]) + "\n" +
-              "Predicted:\n" + print_pos(lite.log[i]['pred_pos']) +
-              "APRS.fi:\n" + print_pos(lite.log[i]['aprs_pos']) +
               "Ground Station:\n" + print_pos(lite.log[i]['ground_pos']) +
+              "APRS.fi:\n" + print_pos(lite.log[i]['aprs_pos']) +
+              "Predicted:\n" + print_pos(lite.log[i]['pred_pos']) +
               ">> " + lite.log[i]['command']))
         if lite.last_ground_update == 0:
             print(fcn.print_out("Ground Station data is up to date"))

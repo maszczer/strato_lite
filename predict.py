@@ -1,4 +1,3 @@
-import functions as fcn
 import config as lite
 from astropy import units as u
 from astropy.coordinates import EarthLocation
@@ -114,7 +113,7 @@ def predict(pos):
             yPred = u_0xyz[1]+dtpred*dUdt_y
             zPred = u_0xyz[2]+dtpred*dUdt_z
 
-            uPredxyz = EarthLocation(x=u_1lla[0]*u.m, y=u_1lla[1]*u.m, z=u_1lla[2]*u.m)
+            uPredxyz = EarthLocation(x=xPred*u.m, y=yPred*u.m, z=zPred*u.m)
             uPredlla = uPredxyz.to_geodetic('WGS84')
             predLat = uPredlla.lat.value
             predLng = uPredlla.lon.value
@@ -124,4 +123,4 @@ def predict(pos):
         ## MAKE ALL CHANGES ABOVE ##
     except IndexError:
         pass
-    return [(predLat), (predLng), (predAlt)]
+    return [predLat, predLng, predAlt]

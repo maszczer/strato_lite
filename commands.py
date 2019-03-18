@@ -15,11 +15,11 @@ def list_commands():
 def status():
     ''' Print flight setup info '''
     print(fcn.print_out("-- STATUS --\n"
-          "APRS key: " + lite.aprs_key +
+          "APRS key: " + lite.aprs_key + "\n"
           "Telescope coordinates : [" + str(lite.ref_pos[0]) + ", " +
           str(lite.ref_pos[1]) + ", " + str(lite.ref_pos[2]) + "]\n" +
-          "TCP_IP: " + lite.TCP_IP +
-          "TCP_PORT: " + str(lite.TCP_PORT) +
+          "TCP_IP: " + lite.TCP_IP + "\n"
+          "TCP_PORT: " + str(lite.TCP_PORT) + "\n"
           "Program has been running for " +
           str(round(lite.n * 10 / 60, 4)) + " min"))  # buggy
 
@@ -120,7 +120,7 @@ def reset():
                     "Type 'yes' to move, anything else to cancel\n")
     if confirm.lower() == "yes":
         # '#33,HA,DEC;' Provides values for HA, DEC to telescope
-        # This should be the default position for the telescoep
+        # This should be the default position for the telescope
         command = "#33,3.66,-6.8;"
         print(fcn.print_out(">> " + command))
         if lite.is_tcp_set(lite.TCP_IP, lite.TCP_PORT) and not lite.pause:

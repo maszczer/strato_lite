@@ -1,0 +1,2 @@
+"lat (deg)","lng (deg)","alt (m)","az (deg)","el (deg)","range (m)","ha (deg)","dec (deg)","utime","isotime","grndLat (deg)","grndLng (deg)","grndAlt (m)","aprsLat (deg)","aprsLng (deg)","aprsAlt (m)","predLat (deg)","predLng (deg)","predAlt (m)","command","source"
+"-404","-404","-404","152.87024998988716","-46.42144247039331","9199505.224303331","-7.47540685103568","-70.16274574610273","-404","2019-02-13 17:32:17.504839","-404","-404","-404","42.7915","-83.74567","277.0","-404","-404","-404","#12;","pred"

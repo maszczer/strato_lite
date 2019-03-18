@@ -1,7 +1,7 @@
 *.pyc
 *~
 *.swp
-*.csv
+lite*
 *.log
 fak*
 test.py

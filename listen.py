@@ -10,7 +10,7 @@ import socket
 ''' Listen for TCP packets on port 6001 '''
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(("localhost", 6001))
+    sock.bind(("", 6001))
     sock.listen(5)
     print("Now listening on port 6001\n")
     client_sock = sock.accept()[0]

@@ -78,9 +78,9 @@ IMPLEMENT YOUR ALGORITHM BELOW
 def predict(pos):
     # Start prediction after 30 seconds have elapsed
     if lite.n < 3\
-            or not np.array_equal(lite.log[-1]['pos'][0:3], lite.null_pos[0:3])\
-            or not np.array_equal(lite.log[-2]['pos'][0:3], lite.null_pos[0:3])\
-            or not np.array_equal(lite.log[-3]['pos'][0:3], lite.null_pos[0:3]):
+            or np.array_equal(lite.log[-1]['pos'][0:3], lite.null_pos[0:3])\
+            or np.array_equal(lite.log[-2]['pos'][0:3], lite.null_pos[0:3])\
+            or np.array_equal(lite.log[-3]['pos'][0:3], lite.null_pos[0:3]):
         return pos
     n = lite.n
     try:

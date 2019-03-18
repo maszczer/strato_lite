@@ -132,7 +132,6 @@ def conditional_data_update(ground_pos, aprs_pos):
         else:
             lite.last_aprs_update += 1
     # Else, check for new APRS data
-    # Else, check for new APRS
     elif is_pos_updated(lite.aprs_pos[0:3], aprs_pos[0:3]):
         pos = lite.aprs_pos
         lite.last_aprs_update = 0

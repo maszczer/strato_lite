@@ -76,28 +76,29 @@ IMPLEMENT YOUR ALGORITHM BELOW
 ## return pos for first 30 sec
 # An algorithm for predicting the balloon's next location
 def predict(pos):
+    n = lite.n
     # Start prediction after 30 seconds have elapsed
     if lite.n < 3\
-            or np.array_equal(lite.log[-1]['pos'][0:3], lite.null_pos[0:3])\
-            or np.array_equal(lite.log[-2]['pos'][0:3], lite.null_pos[0:3])\
-            or np.array_equal(lite.log[-3]['pos'][0:3], lite.null_pos[0:3]):
+            or np.array_equal(pos, lite.null_pos[0:3])\
+            or np.array_equal(lite.log[n-1]['pos'][0:3], lite.null_pos[0:3])\
+            or np.array_equal(lite.log[n-2]['pos'][0:3], lite.null_pos[0:3]):
         return pos
-    n = lite.n
     try:
         ## MAKE ALL CHANGES BELOW ##
         ############################
         if (n > 0):
             dt = 10
             dtpred = 30
-            u_0lla = lite.log[-1]["pos"][0:3]
+
+            u_0lla = pos[0:3]
             u_0xyz = EarthLocation(lat=u_0lla[0], lon=u_0lla[1], height=u_0lla[2]*u.m)
             u_0xyz = [u_0xyz.x.value,u_0xyz.y.value,u_0xyz.z.value]
 
-            u_1lla = lite.log[-2]["pos"][0:3]
+            u_1lla = lite.log[n-1]["pos"][0:3]
             u_1xyz = EarthLocation(lat=u_1lla[0], lon=u_1lla[1], height=u_1lla[2]*u.m)
             u_1xyz = [u_1xyz.x.value,u_1xyz.y.value,u_1xyz.z.value]
 
-            u_2lla = lite.log[-3]["pos"][0:3]
+            u_2lla = lite.log[n-2]["pos"][0:3]
             u_2xyz = EarthLocation(lat=u_2lla[0], lon=u_2lla[1], height=u_2lla[2]*u.m)
             u_2xyz = [u_2xyz.x.value,u_2xyz.y.value,u_2xyz.z.value]
 

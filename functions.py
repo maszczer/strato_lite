@@ -22,7 +22,7 @@ def azel_to_hadec(azel):
     ha_rad = math.acos(math.cos(z_rad) / (math.cos(dec_rad) * math.cos(phi_rad))
                    - math.tan(dec_rad) * math.tan(phi_rad))
     # Convert back to degrees
-    ha_deg = math.degrees(ha_rad) / 15.0
+    ha_deg = math.degrees(ha_rad) #/ 15.0
     dec_deg = math.degrees(dec_rad)
     if azel[0] > 0 and azel[0] < 180:
         ha_deg *= -1
